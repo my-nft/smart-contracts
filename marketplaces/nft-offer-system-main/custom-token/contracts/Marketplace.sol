@@ -47,7 +47,7 @@ contract Marketplace {
     // Events
     event NewBuyOffer(uint256 tokenId, address buyer, uint256 value);
     event BuyOfferWithdrawn(uint256 tokenId, address buyer);
-    event RoyaltiesPaid(uint256 tokenId, uint value);
+    
     event Sale(uint256 tokenId, address seller, address buyer, uint256 value);
 
     constructor(address tokenContractAddress, address customTokenContractAddress) {
