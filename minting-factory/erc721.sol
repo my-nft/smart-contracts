@@ -2090,7 +2090,7 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
 
 
 
-    function Whitelist(address[] memory _beneficiaries) external {
+    function whitelist(address[] memory _beneficiaries) external {
       require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
       for (uint256 i = 0; i < _beneficiaries.length; i++) {
         if (! whitelists[_beneficiaries[i]]){
