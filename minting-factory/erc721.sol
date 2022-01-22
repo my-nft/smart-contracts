@@ -1620,11 +1620,6 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
         //solhint-disable-next-line max-line-length
         require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
 
-
-        // _transfer(from, to, 0);
-        // _transfer(from, to, 1);
-        // _transfer(from, to, 2);
-
         _transfer(from, to, tokenId);
     }
 
@@ -1640,7 +1635,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
      */
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public virtual override {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
-        _safeTransfer(from, to, tokenId, _data)
+        _safeTransfer(from, to, tokenId, _data);
     }
 
     /**
@@ -2028,6 +2023,7 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
     //uint256 public maxPerWallet = 100;
     //uint256 public maxPerWallet;
     uint256 private _maxPerWallet;
+    uint256 public numberOfWhitelisted;
 
    // mapping (address => bool) public whitelists;
     Counters.Counter private _tokenIdTracker;
@@ -2073,6 +2069,9 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
 
     function setOwner(address _owner) public virtual {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role to mint");
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+
+        _setupRole(MINTER_ROLE, _msgSender());
         owner = _owner;
 
     }
@@ -2094,7 +2093,23 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
     function Whitelist(address[] memory _beneficiaries) external {
       require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
       for (uint256 i = 0; i < _beneficiaries.length; i++) {
+        if (! whitelists[_beneficiaries[i]]){
+            numberOfWhitelisted = numberOfWhitelisted + 1;
+        }
         whitelists[_beneficiaries[i]] = true;
+
+      }
+    }
+
+    function removeFromWhitelist(address[] memory _beneficiaries) external {
+      require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
+      for (uint256 i = 0; i < _beneficiaries.length; i++) {
+
+        if (whitelists[_beneficiaries[i]]){
+            numberOfWhitelisted = numberOfWhitelisted.sub(1);
+        }
+        whitelists[_beneficiaries[i]] = false;
+
       }
     }
 
