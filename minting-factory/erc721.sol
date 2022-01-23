@@ -2059,13 +2059,11 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
 
     }
 
-
     function setURI(string memory baseURI) public virtual {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
         _setBaseURI(baseURI);
 
     }
-
 
     function setOwner(address _owner) public virtual {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role to mint");
@@ -2087,8 +2085,6 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
         whitelistingEnabled = _toggle;
 
     }
-
-
 
     function whitelist(address[] memory _beneficiaries) external {
       require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
@@ -2113,14 +2109,9 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
       }
     }
 
-
-
-
     function contractURI() public view returns (string memory) {
         return string(abi.encodePacked(baseURI(), "contract-metadata.json"));
     }
-
-
 
     /**
      * @dev Creates a new token for `to`. Its token ID will be automatically

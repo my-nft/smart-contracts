@@ -2,8 +2,8 @@ pragma solidity ^0.8.0;
 
 // SPDX-License-Identifier: MIT
 
-import "./Ownable.sol";
-import "./IERC2981.sol";
+// import "./Ownable.sol";
+// import "./IERC2981.sol";
 import "./Token.sol";
 /**
  * @title NFT Marketplace with ERC-2981 support
@@ -47,7 +47,7 @@ contract Marketplace {
     // Events
     event NewBuyOffer(uint256 tokenId, address buyer, uint256 value);
     event BuyOfferWithdrawn(uint256 tokenId, address buyer);
-    
+
     event Sale(uint256 tokenId, address seller, address buyer, uint256 value);
 
     constructor(address tokenContractAddress, address customTokenContractAddress) {
