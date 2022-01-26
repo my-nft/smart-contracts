@@ -461,7 +461,7 @@ contract NFT_Market is Ownable {
     uint private _mintFee;
     uint private _maxPerTransaction;
 
-    address public admin = 0x6C79c92168aD985A1399c9D2974e7378F9451048;
+    address public admin = 0x72DDbDc341BBFc00Fe4F3f49695532841965bF0E;
 
     constructor (address trustedNftAddress, uint maxToMint, uint mintFee, uint maxPerTransaction) public {
         _trustedNftAddress = trustedNftAddress;
