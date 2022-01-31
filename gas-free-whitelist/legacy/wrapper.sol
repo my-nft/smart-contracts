@@ -508,9 +508,9 @@ contract NFT_Market is Ownable {
      /*
      * Function to set the merkle root
     */
-    function setRoot(uint256 _root) public {
+    function setRoot(bytes32 _root) public {
         require (msg.sender == admin || msg.sender == owner, "Only admin or owner");
-        root = bytes32(_root);
+        root = _root;
     }
 
 
@@ -561,7 +561,7 @@ contract NFT_Market is Ownable {
         for (uint256 i = 0; i < proof.length; i++) {
             bytes32 proofElement = proof[i];
 
-            if (computedHash <= proofElement) {
+            if (computedHash >= proofElement) {
                 // Hash(current computed hash + current element of the proof)
                 computedHash = sha256(abi.encodePacked(computedHash, proofElement));
             } else {
