@@ -19,7 +19,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"gas-free-whitelist/legacy/erc721.sol": "SafeMath"
+			"smart-contracts/minting-factory/wrapper.sol": "SafeMath"
 		},
 		"evmVersion": "istanbul",
 		"libraries": {},
@@ -33,12 +33,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"gas-free-whitelist/legacy/erc721.sol": {
-			"keccak256": "0x0060a71a642d50bae0f440808107c3527f756be5f73b55e5623b6039f46bbd6b",
-			"license": "MIT",
+		"smart-contracts/minting-factory/wrapper.sol": {
+			"keccak256": "0x429ee7a355a8da611427f358f1e48bd605160610e4df94a934ad285ca1ff50b6",
+			"license": "BSD-3-Clause",
 			"urls": [
-				"bzz-raw://43fd1e2b2e4dd5da4d66f9ce43e798ff04a2d4f17f0c5ac5ff499b2d6876edf2",
-				"dweb:/ipfs/QmPCcGhwyoJTiYypWK122kuxcj7W9UMXe18WCSbaJMc9ET"
+				"bzz-raw://ea00bd890a7446bc3fde3e9bb996849b6ee1999e17bc598b7147cb60110576f0",
+				"dweb:/ipfs/QmeXYFkW5cpqBUBDZNf2cnhR7XfHU8UJ23FPJtTchecZGb"
 			]
 		}
 	},

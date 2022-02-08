@@ -184,16 +184,6 @@
 						"internalType": "uint256",
 						"name": "count",
 						"type": "uint256"
-					},
-					{
-						"internalType": "bytes32[]",
-						"name": "_proof",
-						"type": "bytes32[]"
-					},
-					{
-						"internalType": "uint256[]",
-						"name": "positions",
-						"type": "uint256[]"
 					}
 				],
 				"name": "mint",
@@ -249,19 +239,6 @@
 				"type": "function"
 			},
 			{
-				"inputs": [],
-				"name": "root",
-				"outputs": [
-					{
-						"internalType": "bytes32",
-						"name": "",
-						"type": "bytes32"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
 				"inputs": [
 					{
 						"internalType": "address",
@@ -296,32 +273,6 @@
 					}
 				],
 				"name": "setMintNativeFee",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "bytes32",
-						"name": "_root",
-						"type": "bytes32"
-					}
-				],
-				"name": "setRoot",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "bool",
-						"name": "_toggle",
-						"type": "bool"
-					}
-				],
-				"name": "toggleWhitelisting",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -364,48 +315,6 @@
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "bytes32[]",
-						"name": "proof",
-						"type": "bytes32[]"
-					},
-					{
-						"internalType": "bytes32",
-						"name": "leaf",
-						"type": "bytes32"
-					},
-					{
-						"internalType": "uint256[]",
-						"name": "positions",
-						"type": "uint256[]"
-					}
-				],
-				"name": "verify",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "whitelistingEnabled",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
 			}
 		],
 		"devdoc": {
@@ -428,7 +337,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"gas-free-whitelist/legacy/wrapper.sol": "NFT_Market"
+			"smart-contracts/minting-factory/wrapper.sol": "NFT_Market"
 		},
 		"evmVersion": "istanbul",
 		"libraries": {},
@@ -442,12 +351,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"gas-free-whitelist/legacy/wrapper.sol": {
-			"keccak256": "0x3badd747446baf637a58d7e4dfef6d300c278fbe9bcd5d735b5ecbc7a301b598",
+		"smart-contracts/minting-factory/wrapper.sol": {
+			"keccak256": "0x429ee7a355a8da611427f358f1e48bd605160610e4df94a934ad285ca1ff50b6",
 			"license": "BSD-3-Clause",
 			"urls": [
-				"bzz-raw://0050a867e2ea360a21c43287d1c34afc0f5b0e5829063de00c0297d6ef706963",
-				"dweb:/ipfs/QmXdZE2ox62jUrqVg6sViPVjcym9TWCC1wJ8vvHaTmFaao"
+				"bzz-raw://ea00bd890a7446bc3fde3e9bb996849b6ee1999e17bc598b7147cb60110576f0",
+				"dweb:/ipfs/QmeXYFkW5cpqBUBDZNf2cnhR7XfHU8UJ23FPJtTchecZGb"
 			]
 		}
 	},

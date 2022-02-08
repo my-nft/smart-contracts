@@ -536,10 +536,10 @@ contract NFT_Market is Ownable {
       return totalMinted.add(count) < maxFree;
     }
 
-    function mint(uint256 count, bytes32[] memory _proof) payable public {
+    function mint(uint256 count, bytes32[] memory _proof, uint256[] memory positions) payable public {
         // owner can mint without fee
         // other users need to pay a fixed fee in token
-        require(verify(_proof, bytes32(uint256(uint160(msg.sender)))) || ! whitelistingEnabled, "Not whitelisted");
+        require(verify(_proof, bytes32(uint256(uint160(msg.sender))), positions) || ! whitelistingEnabled, "Not whitelisted");
         uint256 totalMinted = IERC721(getTrustedNftAddress()).totalSupply();
         require (count < getMaxPerTransaction(), "Max to mint reached");
         require (totalMinted.add(count) <= getMaxToMint(), "Max supply reached");
@@ -559,22 +559,19 @@ contract NFT_Market is Ownable {
     /*
      * Function to verify the proof
     */
-    function verify(bytes32[] memory proof, bytes32 leaf) public view returns (bool) {
+    function verify(bytes32[] memory proof, bytes32 leaf, uint256[] memory positions) public view returns (bool) {
+
         bytes32 computedHash = leaf;
 
         for (uint256 i = 0; i < proof.length; i++) {
             bytes32 proofElement = proof[i];
 
-            if (computedHash >= proofElement) {
-                // Hash(current computed hash + current element of the proof)
+            if (positions[i] == 1) {
                 computedHash = sha256(abi.encodePacked(computedHash, proofElement));
             } else {
-                // Hash(current element of the proof + current computed hash)
                 computedHash = sha256(abi.encodePacked(proofElement, computedHash));
             }
         }
-
-        // Check if the computed hash (root) is equal to the provided root
         return computedHash == root;
     }
 
