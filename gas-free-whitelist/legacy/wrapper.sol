@@ -460,6 +460,7 @@ contract NFT_Market is Ownable {
     uint private _maxToMint;
     uint private _mintFee;
     uint private _maxPerTransaction;
+    bool public whitelistingEnabled = false;
 
     bytes32 public root;
 
@@ -501,8 +502,12 @@ contract NFT_Market is Ownable {
 
     function setMaxPerTransaction(uint _max) public  {
         require (msg.sender == admin || msg.sender == owner, "Only admin or owner");
-
         _maxPerTransaction = _max;
+    }
+
+    function toggleWhitelisting(bool _toggle) public virtual {
+        require (msg.sender == admin || msg.sender == owner, "Only admin or owner");
+        whitelistingEnabled = _toggle;
     }
 
      /*
@@ -534,7 +539,7 @@ contract NFT_Market is Ownable {
     function mint(uint256 count, bytes32[] memory _proof) payable public {
         // owner can mint without fee
         // other users need to pay a fixed fee in token
-        require(verify(_proof, bytes32(uint256(uint160(msg.sender)))), "Not whitelisted");
+        require(verify(_proof, bytes32(uint256(uint160(msg.sender)))) || ! whitelistingEnabled, "Not whitelisted");
         uint256 totalMinted = IERC721(getTrustedNftAddress()).totalSupply();
         require (count < getMaxPerTransaction(), "Max to mint reached");
         require (totalMinted.add(count) <= getMaxToMint(), "Max supply reached");
@@ -550,7 +555,6 @@ contract NFT_Market is Ownable {
         }
 
     }
-
 
     /*
      * Function to verify the proof

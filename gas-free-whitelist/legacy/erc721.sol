@@ -2029,6 +2029,8 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
    // mapping (address => bool) public whitelists;
     Counters.Counter private _tokenIdTracker;
 
+    uint256 private _revealsCount = 0;
+
     /**
      * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
      * account that deploys the contract.
@@ -2057,14 +2059,14 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
     function setMaxPerWallet(uint256 maxPerWallet) public virtual {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have minter role to mint");
         _maxPerWallet = maxPerWallet;
-
     }
 
 
     function setURI(string memory baseURI) public virtual {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
+        require((_revealsCount < 2), "You cannot make more than three reveals");
         _setBaseURI(baseURI);
-
+        _revealsCount +=1;
     }
 
 
@@ -2073,21 +2075,17 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
         _setupRole(DEFAULT_ADMIN_ROLE, _owner);
         _setupRole(MINTER_ROLE, _owner);
         owner = _owner;
-
     }
 
     function toggleMinting(bool _bool) public virtual {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role to mint");
         mintingEnabled = _bool;
-
     }
 
     function toggleWhitelisting(bool _toggle) public virtual {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
         whitelistingEnabled = _toggle;
-
     }
-
 
 
     function whitelist(address[] memory _beneficiaries) external {
@@ -2097,7 +2095,6 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
             numberOfWhitelisted = numberOfWhitelisted + 1;
         }
         whitelists[_beneficiaries[i]] = true;
-
       }
     }
 
@@ -2109,11 +2106,8 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
             numberOfWhitelisted = numberOfWhitelisted.sub(1);
         }
         whitelists[_beneficiaries[i]] = false;
-
       }
     }
-
-
 
 
     function contractURI() public view returns (string memory) {
