@@ -81,7 +81,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"gas-free-whitelist/legacy/wrapper.sol": "Ownable"
+			"smart-contracts/gas-free-whitelist/legacy/wrapper.sol": "Ownable"
 		},
 		"evmVersion": "istanbul",
 		"libraries": {},
@@ -95,12 +95,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"gas-free-whitelist/legacy/wrapper.sol": {
-			"keccak256": "0x3badd747446baf637a58d7e4dfef6d300c278fbe9bcd5d735b5ecbc7a301b598",
+		"smart-contracts/gas-free-whitelist/legacy/wrapper.sol": {
+			"keccak256": "0x6e22a0c40aa83fd22ce54a2dabbea1c0377d3c2f321d6f1556da0371292106c6",
 			"license": "BSD-3-Clause",
 			"urls": [
-				"bzz-raw://0050a867e2ea360a21c43287d1c34afc0f5b0e5829063de00c0297d6ef706963",
-				"dweb:/ipfs/QmXdZE2ox62jUrqVg6sViPVjcym9TWCC1wJ8vvHaTmFaao"
+				"bzz-raw://53caeabce7eac0c48f22d510a24ae0e5c66a10eaca2a55986d7572b155e545b7",
+				"dweb:/ipfs/QmZj66U44TytqXHjR6Hj1Z9B6a3s4XYtmAPd7btMgFsxmb"
 			]
 		}
 	},

@@ -536,10 +536,10 @@ contract NFT_Market is Ownable {
       return totalMinted.add(count) < maxFree;
     }
 
-    function mint(uint256 count, bytes32[] memory _proof, uint256[] memory positions) payable public {
+    function mint(uint256 count,  bytes32 leaf, bytes32[] memory _proof, uint256[] memory positions) payable public {
         // owner can mint without fee
         // other users need to pay a fixed fee in token
-        require(verify(_proof, bytes32(uint256(uint160(msg.sender))), positions) || ! whitelistingEnabled, "Not whitelisted");
+        require(verify(_proof, leaf, positions) || ! whitelistingEnabled, "Not whitelisted");
         uint256 totalMinted = IERC721(getTrustedNftAddress()).totalSupply();
         require (count < getMaxPerTransaction(), "Max to mint reached");
         require (totalMinted.add(count) <= getMaxToMint(), "Max supply reached");

@@ -19,7 +19,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"gas-free-whitelist/legacy/erc721.sol": "EnumerableSet"
+			"smart-contracts/gas-free-whitelist/legacy/wrapper.sol": "EnumerableSet"
 		},
 		"evmVersion": "istanbul",
 		"libraries": {},
@@ -33,12 +33,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"gas-free-whitelist/legacy/erc721.sol": {
-			"keccak256": "0x0060a71a642d50bae0f440808107c3527f756be5f73b55e5623b6039f46bbd6b",
-			"license": "MIT",
+		"smart-contracts/gas-free-whitelist/legacy/wrapper.sol": {
+			"keccak256": "0x6e22a0c40aa83fd22ce54a2dabbea1c0377d3c2f321d6f1556da0371292106c6",
+			"license": "BSD-3-Clause",
 			"urls": [
-				"bzz-raw://43fd1e2b2e4dd5da4d66f9ce43e798ff04a2d4f17f0c5ac5ff499b2d6876edf2",
-				"dweb:/ipfs/QmPCcGhwyoJTiYypWK122kuxcj7W9UMXe18WCSbaJMc9ET"
+				"bzz-raw://53caeabce7eac0c48f22d510a24ae0e5c66a10eaca2a55986d7572b155e545b7",
+				"dweb:/ipfs/QmZj66U44TytqXHjR6Hj1Z9B6a3s4XYtmAPd7btMgFsxmb"
 			]
 		}
 	},
