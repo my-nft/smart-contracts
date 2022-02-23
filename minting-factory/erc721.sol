@@ -2022,6 +2022,7 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
     uint256 public fee = 1e17;
     bool public whitelistingEnabled = false;
     bool public mintingEnabled = true;
+    bool public freezeMetadata = false;
 
     uint256 private _maxPerWallet;
     uint256 public numberOfWhitelisted;
@@ -2052,7 +2053,6 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
         admin.transfer(msg.value);
     }
 
-
     function getMaxPerWallet() public view returns (uint256) {
         return _maxPerWallet;
     }
@@ -2063,13 +2063,21 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
 
     }
 
+    function setFreezeMetadata() public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have minter role to mint");
+        require(! freezeMetadata, "NonFungibleToken: already frozen !");
 
-    function setURI(string memory baseURI) public virtual {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
-        _setBaseURI(baseURI);
+        freezeMetadata = true;
 
     }
 
+    function setURI(string memory baseURI) public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
+        require(! freezeMetadata, "Metadata frozen !");
+
+        _setBaseURI(baseURI);
+
+    }
 
     function setOwner(address _owner) public virtual {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
@@ -2116,14 +2124,9 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
       }
     }
 
-
-
-
     function contractURI() public view returns (string memory) {
         return string(abi.encodePacked(baseURI(), "contract-metadata.json"));
     }
-
-
 
     /**
      * @dev Creates a new token for `to`. Its token ID will be automatically
