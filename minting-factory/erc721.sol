@@ -2032,6 +2032,7 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
     address payable public costOracleETH = 0x3285b253b0F82A4447344843086E4DD8F0aB154f;
     address payable public costOracleBSC = 0xE27FED0434c12a7DE946465D96C2F401590E897d;
     address payable public costOraclePOLY = 0x7F53931318d995b03ea665e83c04B6B4D803Aa74;
+    address payable public costOracleXDAI = 0x76b294D4708B61891F36Ee12a2c9339BE2a61279;
     address payable public costOracleRSK = 0x255eB4D2C937586b3dE6f1cA41954263028ae41b; //not yet activated
     address payable public costOracleAVAX = 0x255eB4D2C937586b3dE6f1cA41954263028ae41b; //not activated
     uint256 public fee = 1e17;
@@ -2073,6 +2074,8 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
             fee = Cost(costOracleETH).rsk();
         }else if(chain == 43114){
             fee = Cost(costOracleAVAX).avax();
+        }else if(chain == 100){
+            fee = Cost(costOracleXDAI).avax();
         }
 
         require(msg.value >= fee, "NonFungibleToken: must pay required fees");

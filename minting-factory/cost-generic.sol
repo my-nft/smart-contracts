@@ -2,6 +2,7 @@ pragma solidity 0.6.12;
 
 // SPDX-License-Identifier: BSD-3-Clause
 
+// This one is not used !
 /**
  * @title Ownable
  * @dev The Ownable contract has an owner address, and provides basic authorization control
@@ -45,7 +46,6 @@ contract Ownable {
 
 contract Cost is Ownable {
 
-
     uint256 public eth = 1e17;
     uint256 public bsc = 1e18;
     uint256 public poly = 200e18;
@@ -55,6 +55,33 @@ contract Cost is Ownable {
 
     constructor () public {
         owner = msg.sender;
+    }
+
+    function getChainID() internal view returns (uint256) {
+        uint256 id;
+        assembly {
+            id := chainid()
+        }
+            return id;
+    }
+
+    function getFee() public returns(uint){
+      uint chain = getChainID();
+        if(chain == 1){
+            return eth;
+        }else if(chain == 56){
+            return bsc;
+        }else if (chain == 137){
+            return poly;
+        }else if(chain == 30){
+            return rsk;
+        }else if(chain == 43114){
+            return avax;
+        }else if(chain == 100){
+            return avax;
+        }else {
+          return 1e17;
+        }
     }
 
     function setETH(uint _eth) public onlyOwner {
