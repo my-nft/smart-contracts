@@ -455,131 +455,71 @@ interface IERC721 {
 contract NFT_Market is Ownable {
     using SafeMath for uint;
     using EnumerableSet for EnumerableSet.UintSet;
-    uint256 public totalSales;
-    address private _trustedNftAddress;
-    uint private _maxToMint;
-    uint private _mintFee;
-    uint private _maxPerTransaction;
-    bool public whitelistingEnabled = false;
 
-    bytes32 public root;
+    // =========== Start Smart Contract Setup ==============
 
+    // MUST BE CONSTANT - THE FEE TOKEN ADDRESS AND NFT ADDRESS
+    // the below addresses are trusted and constant so no issue of re-entrancy happens
+    address public constant trustedNftAddress = 0x11ae284cff508af1849c3a5b562d39D7ABD9D333;
     address public admin = 0x6C79c92168aD985A1399c9D2974e7378F9451048;
 
-    constructor (address trustedNftAddress, uint maxToMint, uint mintFee, uint maxPerTransaction) public {
-        _trustedNftAddress = trustedNftAddress;
-        _maxToMint = maxToMint;
-        _mintFee = mintFee;
-        _maxPerTransaction = maxPerTransaction;
-    }
+    // minting fee in token, 10 tokens (10e18 because token has 18 decimals)
 
+    uint public mintFee = 70e15;
 
-    function getTrustedNftAddress() public view returns (address) {
-        return _trustedNftAddress;
-    }
+    uint public maxFree = 0;
+    uint public maxToMint = 10000;
+    uint public maxPerTransaction = 20;
 
-    function getMaxToMint() public view returns (uint) {
-        return _maxToMint;
-    }
-
-    function getMintFee() public view returns (uint) {
-        return _mintFee;
-    }
-
-    function getMaxPerTransaction() public view returns (uint) {
-        return _maxPerTransaction;
-    }
+    // ============ End Smart Contract Setup ================
 
     function setAdmin(address _admin) public  {
         require (msg.sender == admin || msg.sender == owner, "Only admin or owner");
         admin = _admin;
     }
 
-    function setMintNativeFee(uint mintFee) public {
+
+    function setMintNativeFee(uint _mintFee) public {
         require (msg.sender == admin || msg.sender == owner, "Only admin or owner");
-        _mintFee = mintFee;
+        mintFee = _mintFee;
     }
 
-    function setMaxPerTransaction(uint _max) public  {
+    function setMaxPerTransaction(uint _max) public {
         require (msg.sender == admin || msg.sender == owner, "Only admin or owner");
-        _maxPerTransaction = _max;
+        maxPerTransaction = _max;
     }
-
-    function toggleWhitelisting(bool _toggle) public virtual {
-        require (msg.sender == admin || msg.sender == owner, "Only admin or owner");
-        whitelistingEnabled = _toggle;
-    }
-
-     /*
-     * Function to set the merkle root
-    */
-    function setRoot(bytes32 _root) public {
-        require (msg.sender == admin || msg.sender == owner, "Only admin or owner");
-        root = _root;
-    }
-
-
-    // =========== Start Smart Contract Setup ==============
-
-
-    uint public maxFree = 0;
-
-    // ============ End Smart Contract Setup ================
-
 
     function totalSupply() public view returns (uint256){
-      return IERC721(getTrustedNftAddress()).totalSupply();
+      return IERC721(trustedNftAddress).totalSupply();
     }
 
     function canMintFree(uint256 count) public view returns (bool) {
-      uint256 totalMinted = IERC721(getTrustedNftAddress()).totalSupply();
+      uint256 totalMinted = IERC721(trustedNftAddress).totalSupply();
       return totalMinted.add(count) < maxFree;
     }
 
-    function mint(uint256 count,  bytes32 leaf, bytes32[] memory _proof, uint256[] memory positions) payable public {
-        // owner can mint without fee
-        // other users need to pay a fixed fee in token
-        require(verify(_proof, leaf, positions) || ! whitelistingEnabled, "Not whitelisted");
-        uint256 totalMinted = IERC721(getTrustedNftAddress()).totalSupply();
-        require (count < getMaxPerTransaction(), "Max to mint reached");
-        require (totalMinted.add(count) <= getMaxToMint(), "Max supply reached");
+    function mint(uint256 count) payable public {
+        uint256 totalMinted = IERC721(trustedNftAddress).totalSupply();
+        require (count < maxPerTransaction, "Max to mint reached");
+        require (totalMinted.add(count) <= maxToMint, "Max supply reached");
 
         address payable _owner = address(uint160(owner));
         if (totalMinted.add(count) > maxFree) {
-            require(msg.value >= getMintFee().mul(count), "Insufficient fees");
+            require(msg.value >= mintFee.mul(count), "Insufficient fees");
             _owner.transfer(msg.value);
-            totalSales = totalSales.add(msg.value);
         }
         for(uint i = 0; i < count; i++){
-          IERC721(getTrustedNftAddress()).mint(msg.sender);
+          IERC721(trustedNftAddress).mint(msg.sender);
         }
 
     }
 
-    /*
-     * Function to verify the proof
-    */
-    function verify(bytes32[] memory proof, bytes32 leaf, uint256[] memory positions) public view returns (bool) {
-
-        bytes32 computedHash = leaf;
-
-        for (uint256 i = 0; i < proof.length; i++) {
-            bytes32 proofElement = proof[i];
-
-            if (positions[i] == 1) {
-                computedHash = sha256(abi.encodePacked(computedHash, proofElement));
-            } else {
-                computedHash = sha256(abi.encodePacked(proofElement, computedHash));
-            }
-        }
-        return computedHash == root;
-    }
 
     event ERC721Received(address operator, address from, uint256 tokenId, bytes data);
 
     // ERC721 Interface Support Function
     function onERC721Received(address operator, address from, uint256 tokenId, bytes memory data) public returns(bytes4) {
-        require(msg.sender == getTrustedNftAddress());
+        require(msg.sender == trustedNftAddress);
         emit ERC721Received(operator, from, tokenId, data);
         return this.onERC721Received.selector;
     }
