@@ -1,8 +1,6 @@
-// File: contracts\utils\EnumerableSet.sol
-
 // SPDX-License-Identifier: MIT
+pragma solidity 0.8.4;
 
-pragma solidity 0.6.12;
 /**
  * @dev Library for managing
  * https://en.wikipedia.org/wiki/Set_(abstract_data_type)[sets] of primitive
@@ -40,10 +38,9 @@ library EnumerableSet {
     struct Set {
         // Storage of set values
         bytes32[] _values;
-
         // Position of the value in the `values` array, plus 1 because index 0
         // means a value is not in the set.
-        mapping (bytes32 => uint256) _indexes;
+        mapping(bytes32 => uint256) _indexes;
     }
 
     /**
@@ -74,7 +71,8 @@ library EnumerableSet {
         // We read and store the value's index to prevent multiple reads from the same storage slot
         uint256 valueIndex = set._indexes[value];
 
-        if (valueIndex != 0) { // Equivalent to contains(set, value)
+        if (valueIndex != 0) {
+            // Equivalent to contains(set, value)
             // To delete an element from the _values array in O(1), we swap the element to delete with the last one in
             // the array, and then remove the last element (sometimes called as 'swap and pop').
             // This modifies the order of the array, as noted in {at}.
@@ -82,15 +80,14 @@ library EnumerableSet {
             uint256 toDeleteIndex = valueIndex - 1;
             uint256 lastIndex = set._values.length - 1;
 
-            // When the value to delete is the last one, the swap operation is unnecessary. However, since this occurs
-            // so rarely, we still do the swap anyway to avoid the gas cost of adding an 'if' statement.
+            if (lastIndex != toDeleteIndex) {
+                bytes32 lastValue = set._values[lastIndex];
 
-            bytes32 lastvalue = set._values[lastIndex];
-
-            // Move the last value to the index where the value to delete is
-            set._values[toDeleteIndex] = lastvalue;
-            // Update the index for the moved value
-            set._indexes[lastvalue] = toDeleteIndex + 1; // All indexes are 1-based
+                // Move the last value to the index where the value to delete is
+                set._values[toDeleteIndex] = lastValue;
+                // Update the index for the moved value
+                set._indexes[lastValue] = valueIndex; // Replace lastValue's index to valueIndex
+            }
 
             // Delete the slot where the moved value was stored
             set._values.pop();
@@ -118,19 +115,96 @@ library EnumerableSet {
         return set._values.length;
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
-    *
-    * Note that there are no guarantees on the ordering of values inside the
-    * array, and it may change when more values are added or removed.
-    *
-    * Requirements:
-    *
-    * - `index` must be strictly less than {length}.
-    */
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
+     *
+     * Note that there are no guarantees on the ordering of values inside the
+     * array, and it may change when more values are added or removed.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
     function _at(Set storage set, uint256 index) private view returns (bytes32) {
-        require(set._values.length > index, "EnumerableSet: index out of bounds");
         return set._values[index];
+    }
+
+    /**
+     * @dev Return the entire set in an array
+     *
+     * WARNING: This operation will copy the entire storage to memory, which can be quite expensive. This is designed
+     * to mostly be used by view accessors that are queried without any gas fees. Developers should keep in mind that
+     * this function has an unbounded cost, and using it as part of a state-changing function may render the function
+     * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
+     */
+    function _values(Set storage set) private view returns (bytes32[] memory) {
+        return set._values;
+    }
+
+    // Bytes32Set
+
+    struct Bytes32Set {
+        Set _inner;
+    }
+
+    /**
+     * @dev Add a value to a set. O(1).
+     *
+     * Returns true if the value was added to the set, that is if it was not
+     * already present.
+     */
+    function add(Bytes32Set storage set, bytes32 value) internal returns (bool) {
+        return _add(set._inner, value);
+    }
+
+    /**
+     * @dev Removes a value from a set. O(1).
+     *
+     * Returns true if the value was removed from the set, that is if it was
+     * present.
+     */
+    function remove(Bytes32Set storage set, bytes32 value) internal returns (bool) {
+        return _remove(set._inner, value);
+    }
+
+    /**
+     * @dev Returns true if the value is in the set. O(1).
+     */
+    function contains(Bytes32Set storage set, bytes32 value) internal view returns (bool) {
+        return _contains(set._inner, value);
+    }
+
+    /**
+     * @dev Returns the number of values in the set. O(1).
+     */
+    function length(Bytes32Set storage set) internal view returns (uint256) {
+        return _length(set._inner);
+    }
+
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
+     *
+     * Note that there are no guarantees on the ordering of values inside the
+     * array, and it may change when more values are added or removed.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
+    function at(Bytes32Set storage set, uint256 index) internal view returns (bytes32) {
+        return _at(set._inner, index);
+    }
+
+    /**
+     * @dev Return the entire set in an array
+     *
+     * WARNING: This operation will copy the entire storage to memory, which can be quite expensive. This is designed
+     * to mostly be used by view accessors that are queried without any gas fees. Developers should keep in mind that
+     * this function has an unbounded cost, and using it as part of a state-changing function may render the function
+     * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
+     */
+    function values(Bytes32Set storage set) internal view returns (bytes32[] memory) {
+        return _values(set._inner);
     }
 
     // AddressSet
@@ -146,7 +220,7 @@ library EnumerableSet {
      * already present.
      */
     function add(AddressSet storage set, address value) internal returns (bool) {
-        return _add(set._inner, bytes32(uint256(value)));
+        return _add(set._inner, bytes32(uint256(uint160(value))));
     }
 
     /**
@@ -156,14 +230,14 @@ library EnumerableSet {
      * present.
      */
     function remove(AddressSet storage set, address value) internal returns (bool) {
-        return _remove(set._inner, bytes32(uint256(value)));
+        return _remove(set._inner, bytes32(uint256(uint160(value))));
     }
 
     /**
      * @dev Returns true if the value is in the set. O(1).
      */
     function contains(AddressSet storage set, address value) internal view returns (bool) {
-        return _contains(set._inner, bytes32(uint256(value)));
+        return _contains(set._inner, bytes32(uint256(uint160(value))));
     }
 
     /**
@@ -173,20 +247,38 @@ library EnumerableSet {
         return _length(set._inner);
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
-    *
-    * Note that there are no guarantees on the ordering of values inside the
-    * array, and it may change when more values are added or removed.
-    *
-    * Requirements:
-    *
-    * - `index` must be strictly less than {length}.
-    */
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
+     *
+     * Note that there are no guarantees on the ordering of values inside the
+     * array, and it may change when more values are added or removed.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
     function at(AddressSet storage set, uint256 index) internal view returns (address) {
-        return address(uint256(_at(set._inner, index)));
+        return address(uint160(uint256(_at(set._inner, index))));
     }
 
+    /**
+     * @dev Return the entire set in an array
+     *
+     * WARNING: This operation will copy the entire storage to memory, which can be quite expensive. This is designed
+     * to mostly be used by view accessors that are queried without any gas fees. Developers should keep in mind that
+     * this function has an unbounded cost, and using it as part of a state-changing function may render the function
+     * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
+     */
+    function values(AddressSet storage set) internal view returns (address[] memory) {
+        bytes32[] memory store = _values(set._inner);
+        address[] memory result;
+
+        assembly {
+            result := store
+        }
+
+        return result;
+    }
 
     // UintSet
 
@@ -228,21 +320,39 @@ library EnumerableSet {
         return _length(set._inner);
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
-    *
-    * Note that there are no guarantees on the ordering of values inside the
-    * array, and it may change when more values are added or removed.
-    *
-    * Requirements:
-    *
-    * - `index` must be strictly less than {length}.
-    */
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
+     *
+     * Note that there are no guarantees on the ordering of values inside the
+     * array, and it may change when more values are added or removed.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
     function at(UintSet storage set, uint256 index) internal view returns (uint256) {
         return uint256(_at(set._inner, index));
     }
-}
 
+    /**
+     * @dev Return the entire set in an array
+     *
+     * WARNING: This operation will copy the entire storage to memory, which can be quite expensive. This is designed
+     * to mostly be used by view accessors that are queried without any gas fees. Developers should keep in mind that
+     * this function has an unbounded cost, and using it as part of a state-changing function may render the function
+     * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
+     */
+    function values(UintSet storage set) internal view returns (uint256[] memory) {
+        bytes32[] memory store = _values(set._inner);
+        uint256[] memory result;
+
+        assembly {
+            result := store
+        }
+
+        return result;
+    }
+}
 // File: contracts\utils\Address.sol
 
 /**
@@ -444,12 +554,11 @@ library Address {
  * This contract is only required for intermediate, library-like contracts.
  */
 abstract contract Context {
-    function _msgSender() internal view virtual returns (address payable) {
+    function _msgSender() internal view virtual returns (address) {
         return msg.sender;
     }
 
-    function _msgData() internal view virtual returns (bytes memory) {
-        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
+    function _msgData() internal view virtual returns (bytes calldata) {
         return msg.data;
     }
 }
@@ -1080,54 +1189,27 @@ interface IERC721Receiver {
     function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data) external returns (bytes4);
 }
 
-// File: contracts\introspection\ERC165.sol
 
 /**
  * @dev Implementation of the {IERC165} interface.
  *
- * Contracts may inherit from this and call {_registerInterface} to declare
- * their support of an interface.
+ * Contracts that want to implement ERC165 should inherit from this contract and override {supportsInterface} to check
+ * for the additional interface id that will be supported. For example:
+ *
+ * ```solidity
+ * function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+ *     return interfaceId == type(MyInterface).interfaceId || super.supportsInterface(interfaceId);
+ * }
+ * ```
+ *
+ * Alternatively, {ERC165Storage} provides an easier to use but more expensive implementation.
  */
-contract ERC165 is IERC165 {
-    /*
-     * bytes4(keccak256('supportsInterface(bytes4)')) == 0x01ffc9a7
-     */
-    bytes4 private constant _INTERFACE_ID_ERC165 = 0x01ffc9a7;
-
-    /**
-     * @dev Mapping of interface ids to whether or not it's supported.
-     */
-    mapping(bytes4 => bool) private _supportedInterfaces;
-
-    constructor () internal {
-        // Derived contracts need only register support for their own interfaces,
-        // we register support for ERC165 itself here
-        _registerInterface(_INTERFACE_ID_ERC165);
-    }
-
+abstract contract ERC165 is IERC165 {
     /**
      * @dev See {IERC165-supportsInterface}.
-     *
-     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
      */
-    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
-        return _supportedInterfaces[interfaceId];
-    }
-
-    /**
-     * @dev Registers the contract as an implementer of the interface defined by
-     * `interfaceId`. Support of the actual ERC165 interface is automatic and
-     * registering its interface id is not required.
-     *
-     * See {IERC165-supportsInterface}.
-     *
-     * Requirements:
-     *
-     * - `interfaceId` cannot be the ERC165 invalid interface (`0xffffffff`).
-     */
-    function _registerInterface(bytes4 interfaceId) internal virtual {
-        require(interfaceId != 0xffffffff, "ERC165: invalid interface id");
-        _supportedInterfaces[interfaceId] = true;
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IERC165).interfaceId;
     }
 }
 
@@ -1157,7 +1239,10 @@ contract ERC165 is IERC165 {
  * As of v3.0.0, only maps of type `uint256 -> address` (`UintToAddressMap`) are
  * supported.
  */
+
 library EnumerableMap {
+    using EnumerableSet for EnumerableSet.Bytes32Set;
+
     // To implement this library for multiple types with as little code
     // repetition as possible, we write it in terms of a generic Map type with
     // bytes32 keys and values.
@@ -1167,18 +1252,10 @@ library EnumerableMap {
     // This means that we can only create new EnumerableMaps for types that fit
     // in bytes32.
 
-    struct MapEntry {
-        bytes32 _key;
-        bytes32 _value;
-    }
-
     struct Map {
-        // Storage of map keys and values
-        MapEntry[] _entries;
-
-        // Position of the entry defined by a key in the `entries` array, plus 1
-        // because index 0 means a key is not in the map.
-        mapping (bytes32 => uint256) _indexes;
+        // Storage of keys
+        EnumerableSet.Bytes32Set _keys;
+        mapping(bytes32 => bytes32) _values;
     }
 
     /**
@@ -1188,20 +1265,13 @@ library EnumerableMap {
      * Returns true if the key was added to the map, that is if it was not
      * already present.
      */
-    function _set(Map storage map, bytes32 key, bytes32 value) private returns (bool) {
-        // We read and store the key's index to prevent multiple reads from the same storage slot
-        uint256 keyIndex = map._indexes[key];
-
-        if (keyIndex == 0) { // Equivalent to !contains(map, key)
-            map._entries.push(MapEntry({ _key: key, _value: value }));
-            // The entry is stored at length-1, but we add 1 to all indexes
-            // and use 0 as a sentinel value
-            map._indexes[key] = map._entries.length;
-            return true;
-        } else {
-            map._entries[keyIndex - 1]._value = value;
-            return false;
-        }
+    function _set(
+        Map storage map,
+        bytes32 key,
+        bytes32 value
+    ) private returns (bool) {
+        map._values[key] = value;
+        return map._keys.add(key);
     }
 
     /**
@@ -1210,68 +1280,50 @@ library EnumerableMap {
      * Returns true if the key was removed from the map, that is if it was present.
      */
     function _remove(Map storage map, bytes32 key) private returns (bool) {
-        // We read and store the key's index to prevent multiple reads from the same storage slot
-        uint256 keyIndex = map._indexes[key];
-
-        if (keyIndex != 0) { // Equivalent to contains(map, key)
-            // To delete a key-value pair from the _entries array in O(1), we swap the entry to delete with the last one
-            // in the array, and then remove the last entry (sometimes called as 'swap and pop').
-            // This modifies the order of the array, as noted in {at}.
-
-            uint256 toDeleteIndex = keyIndex - 1;
-            uint256 lastIndex = map._entries.length - 1;
-
-            // When the entry to delete is the last one, the swap operation is unnecessary. However, since this occurs
-            // so rarely, we still do the swap anyway to avoid the gas cost of adding an 'if' statement.
-
-            MapEntry storage lastEntry = map._entries[lastIndex];
-
-            // Move the last entry to the index where the entry to delete is
-            map._entries[toDeleteIndex] = lastEntry;
-            // Update the index for the moved entry
-            map._indexes[lastEntry._key] = toDeleteIndex + 1; // All indexes are 1-based
-
-            // Delete the slot where the moved entry was stored
-            map._entries.pop();
-
-            // Delete the index for the deleted slot
-            delete map._indexes[key];
-
-            return true;
-        } else {
-            return false;
-        }
+        delete map._values[key];
+        return map._keys.remove(key);
     }
 
     /**
      * @dev Returns true if the key is in the map. O(1).
      */
     function _contains(Map storage map, bytes32 key) private view returns (bool) {
-        return map._indexes[key] != 0;
+        return map._keys.contains(key);
     }
 
     /**
      * @dev Returns the number of key-value pairs in the map. O(1).
      */
     function _length(Map storage map) private view returns (uint256) {
-        return map._entries.length;
+        return map._keys.length();
     }
 
-   /**
-    * @dev Returns the key-value pair stored at position `index` in the map. O(1).
-    *
-    * Note that there are no guarantees on the ordering of entries inside the
-    * array, and it may change when more entries are added or removed.
-    *
-    * Requirements:
-    *
-    * - `index` must be strictly less than {length}.
-    */
+    /**
+     * @dev Returns the key-value pair stored at position `index` in the map. O(1).
+     *
+     * Note that there are no guarantees on the ordering of entries inside the
+     * array, and it may change when more entries are added or removed.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
     function _at(Map storage map, uint256 index) private view returns (bytes32, bytes32) {
-        require(map._entries.length > index, "EnumerableMap: index out of bounds");
+        bytes32 key = map._keys.at(index);
+        return (key, map._values[key]);
+    }
 
-        MapEntry storage entry = map._entries[index];
-        return (entry._key, entry._value);
+    /**
+     * @dev Tries to returns the value associated with `key`.  O(1).
+     * Does not revert if `key` is not in the map.
+     */
+    function _tryGet(Map storage map, bytes32 key) private view returns (bool, bytes32) {
+        bytes32 value = map._values[key];
+        if (value == bytes32(0)) {
+            return (_contains(map, key), bytes32(0));
+        } else {
+            return (true, value);
+        }
     }
 
     /**
@@ -1282,16 +1334,25 @@ library EnumerableMap {
      * - `key` must be in the map.
      */
     function _get(Map storage map, bytes32 key) private view returns (bytes32) {
-        return _get(map, key, "EnumerableMap: nonexistent key");
+        bytes32 value = map._values[key];
+        require(value != 0 || _contains(map, key), "EnumerableMap: nonexistent key");
+        return value;
     }
 
     /**
      * @dev Same as {_get}, with a custom error message when `key` is not in the map.
+     *
+     * CAUTION: This function is deprecated because it requires allocating memory for the error
+     * message unnecessarily. For custom revert reasons use {_tryGet}.
      */
-    function _get(Map storage map, bytes32 key, string memory errorMessage) private view returns (bytes32) {
-        uint256 keyIndex = map._indexes[key];
-        require(keyIndex != 0, errorMessage); // Equivalent to contains(map, key)
-        return map._entries[keyIndex - 1]._value; // All indexes are 1-based
+    function _get(
+        Map storage map,
+        bytes32 key,
+        string memory errorMessage
+    ) private view returns (bytes32) {
+        bytes32 value = map._values[key];
+        require(value != 0 || _contains(map, key), errorMessage);
+        return value;
     }
 
     // UintToAddressMap
@@ -1307,8 +1368,12 @@ library EnumerableMap {
      * Returns true if the key was added to the map, that is if it was not
      * already present.
      */
-    function set(UintToAddressMap storage map, uint256 key, address value) internal returns (bool) {
-        return _set(map._inner, bytes32(key), bytes32(uint256(value)));
+    function set(
+        UintToAddressMap storage map,
+        uint256 key,
+        address value
+    ) internal returns (bool) {
+        return _set(map._inner, bytes32(key), bytes32(uint256(uint160(value))));
     }
 
     /**
@@ -1334,18 +1399,29 @@ library EnumerableMap {
         return _length(map._inner);
     }
 
-   /**
-    * @dev Returns the element stored at position `index` in the set. O(1).
-    * Note that there are no guarantees on the ordering of values inside the
-    * array, and it may change when more values are added or removed.
-    *
-    * Requirements:
-    *
-    * - `index` must be strictly less than {length}.
-    */
+    /**
+     * @dev Returns the element stored at position `index` in the set. O(1).
+     * Note that there are no guarantees on the ordering of values inside the
+     * array, and it may change when more values are added or removed.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
     function at(UintToAddressMap storage map, uint256 index) internal view returns (uint256, address) {
         (bytes32 key, bytes32 value) = _at(map._inner, index);
-        return (uint256(key), address(uint256(value)));
+        return (uint256(key), address(uint160(uint256(value))));
+    }
+
+    /**
+     * @dev Tries to returns the value associated with `key`.  O(1).
+     * Does not revert if `key` is not in the map.
+     *
+     * _Available since v3.4._
+     */
+    function tryGet(UintToAddressMap storage map, uint256 key) internal view returns (bool, address) {
+        (bool success, bytes32 value) = _tryGet(map._inner, bytes32(key));
+        return (success, address(uint160(uint256(value))));
     }
 
     /**
@@ -1356,14 +1432,101 @@ library EnumerableMap {
      * - `key` must be in the map.
      */
     function get(UintToAddressMap storage map, uint256 key) internal view returns (address) {
-        return address(uint256(_get(map._inner, bytes32(key))));
+        return address(uint160(uint256(_get(map._inner, bytes32(key)))));
     }
 
     /**
      * @dev Same as {get}, with a custom error message when `key` is not in the map.
+     *
+     * CAUTION: This function is deprecated because it requires allocating memory for the error
+     * message unnecessarily. For custom revert reasons use {tryGet}.
      */
-    function get(UintToAddressMap storage map, uint256 key, string memory errorMessage) internal view returns (address) {
-        return address(uint256(_get(map._inner, bytes32(key), errorMessage)));
+    function get(
+        UintToAddressMap storage map,
+        uint256 key,
+        string memory errorMessage
+    ) internal view returns (address) {
+        return address(uint160(uint256(_get(map._inner, bytes32(key), errorMessage))));
+    }
+
+    // AddressToUintMap
+
+    struct AddressToUintMap {
+        Map _inner;
+    }
+
+    /**
+     * @dev Adds a key-value pair to a map, or updates the value for an existing
+     * key. O(1).
+     *
+     * Returns true if the key was added to the map, that is if it was not
+     * already present.
+     */
+    function set(
+        AddressToUintMap storage map,
+        address key,
+        uint256 value
+    ) internal returns (bool) {
+        return _set(map._inner, bytes32(uint256(uint160(key))), bytes32(value));
+    }
+
+    /**
+     * @dev Removes a value from a set. O(1).
+     *
+     * Returns true if the key was removed from the map, that is if it was present.
+     */
+    function remove(AddressToUintMap storage map, address key) internal returns (bool) {
+        return _remove(map._inner, bytes32(uint256(uint160(key))));
+    }
+
+    /**
+     * @dev Returns true if the key is in the map. O(1).
+     */
+    function contains(AddressToUintMap storage map, address key) internal view returns (bool) {
+        return _contains(map._inner, bytes32(uint256(uint160(key))));
+    }
+
+    /**
+     * @dev Returns the number of elements in the map. O(1).
+     */
+    function length(AddressToUintMap storage map) internal view returns (uint256) {
+        return _length(map._inner);
+    }
+
+    /**
+     * @dev Returns the element stored at position `index` in the set. O(1).
+     * Note that there are no guarantees on the ordering of values inside the
+     * array, and it may change when more values are added or removed.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
+    function at(AddressToUintMap storage map, uint256 index) internal view returns (address, uint256) {
+        (bytes32 key, bytes32 value) = _at(map._inner, index);
+        return (address(uint160(uint256(key))), uint256(value));
+    }
+
+    /**
+     * @dev Tries to returns the value associated with `key`.  O(1).
+     * Does not revert if `key` is not in the map.
+     *
+     * _Available since v3.4._
+     */
+    function tryGet(AddressToUintMap storage map, address key) internal view returns (bool, uint256) {
+        (bool success, bytes32 value) = _tryGet(map._inner, bytes32(uint256(uint160(key))));
+        return (success, uint256(value));
+    }
+
+    /**
+     * @dev Returns the value associated with `key`.  O(1).
+     *
+     * Requirements:
+     *
+     * - `key` must be in the map.
+     */
+    function get(AddressToUintMap storage map, address key) internal view returns (uint256) {
+        return uint256(_get(map._inner, bytes32(uint256(uint160(key)))));
     }
 }
 
@@ -1390,208 +1553,277 @@ library Strings {
             temp /= 10;
         }
         bytes memory buffer = new bytes(digits);
-        uint256 index = digits - 1;
-        temp = value;
-        while (temp != 0) {
-            buffer[index--] = byte(uint8(48 + temp % 10));
-            temp /= 10;
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
         }
         return string(buffer);
     }
 }
 
-// File: contracts\token\ERC721\ERC721.sol
+
+
+error ApprovalCallerNotOwnerNorApproved();
+error ApprovalQueryForNonexistentToken();
+error ApproveToCaller();
+error ApprovalToCurrentOwner();
+error BalanceQueryForZeroAddress();
+error MintToZeroAddress();
+error MintZeroQuantity();
+error OwnerQueryForNonexistentToken();
+error TransferCallerNotOwnerNorApproved();
+error TransferFromIncorrectOwner();
+error TransferToNonERC721ReceiverImplementer();
+error TransferToZeroAddress();
+error URIQueryForNonexistentToken();
 
 /**
- * @title ERC721 Non-Fungible Token Standard basic implementation
- * @dev see https://eips.ethereum.org/EIPS/eip-721
+ * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
+ * the Metadata extension. Built to optimize for lower gas during batch mints.
+ *
+ * Assumes serials are sequentially minted starting at _startTokenId() (defaults to 0, e.g. 0, 1, 2, 3..).
+ *
+ * Assumes that an owner cannot have more than 2**64 - 1 (max value of uint64) of supply.
+ *
+ * Assumes that the maximum token id cannot exceed 2**256 - 1 (max value of uint256).
  */
-contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
-    using SafeMath for uint256;
+contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     using Address for address;
-    using EnumerableSet for EnumerableSet.UintSet;
-    using EnumerableMap for EnumerableMap.UintToAddressMap;
     using Strings for uint256;
     mapping (address => bool) public whitelists;
 
-    // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
-    // which can be also obtained as `IERC721Receiver(0).onERC721Received.selector`
-    bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
+    // Compiler will pack this into a single 256bit word.
+    struct TokenOwnership {
+        // The address of the owner.
+        address addr;
+        // Keeps track of the start time of ownership with minimal overhead for tokenomics.
+        uint64 startTimestamp;
+        // Whether the token has been burned.
+        bool burned;
+    }
 
-    // mapping (address => bool) public whitelists;
+    // Compiler will pack this into a single 256bit word.
+    struct AddressData {
+        // Realistically, 2**64-1 is more than enough.
+        uint64 balance;
+        // Keeps track of mint count with minimal overhead for tokenomics.
+        uint64 numberMinted;
+        // Keeps track of burn count with minimal overhead for tokenomics.
+        uint64 numberBurned;
+        // For miscellaneous variable(s) pertaining to the address
+        // (e.g. number of whitelist mint slots used).
+        // If there are multiple variables, please pack them into a uint64.
+        uint64 aux;
+    }
 
-    // Mapping from holder address to their (enumerable) set of owned tokens
-    mapping (address => EnumerableSet.UintSet) private _holderTokens;
+    // The tokenId of the next token to be minted.
+    uint256 internal _currentIndex;
 
-    // Enumerable mapping from token ids to their owners
-    EnumerableMap.UintToAddressMap private _tokenOwners;
-
-    // Mapping from token ID to approved address
-    mapping (uint256 => address) private _tokenApprovals;
-
-    // Mapping from owner to operator approvals
-    mapping (address => mapping (address => bool)) private _operatorApprovals;
+    // The number of tokens burned.
+    uint256 internal _burnCounter;
 
     // Token name
     string private _name;
 
     // Token symbol
     string private _symbol;
-
-    // Optional mapping for token URIs
-    mapping (uint256 => string) private _tokenURIs;
-
+    
     // Base URI
     string private _baseURI;
-
-    /*
-     *     bytes4(keccak256('balanceOf(address)')) == 0x70a08231
-     *     bytes4(keccak256('ownerOf(uint256)')) == 0x6352211e
-     *     bytes4(keccak256('approve(address,uint256)')) == 0x095ea7b3
-     *     bytes4(keccak256('getApproved(uint256)')) == 0x081812fc
-     *     bytes4(keccak256('setApprovalForAll(address,bool)')) == 0xa22cb465
-     *     bytes4(keccak256('isApprovedForAll(address,address)')) == 0xe985e9c5
-     *     bytes4(keccak256('transferFrom(address,address,uint256)')) == 0x23b872dd
-     *     bytes4(keccak256('safeTransferFrom(address,address,uint256)')) == 0x42842e0e
-     *     bytes4(keccak256('safeTransferFrom(address,address,uint256,bytes)')) == 0xb88d4fde
-     *
-     *     => 0x70a08231 ^ 0x6352211e ^ 0x095ea7b3 ^ 0x081812fc ^
-     *        0xa22cb465 ^ 0xe985e9c5 ^ 0x23b872dd ^ 0x42842e0e ^ 0xb88d4fde == 0x80ac58cd
+    /**
+     * @dev Internal function to set the base URI for all token IDs. It is
+     * automatically added as a prefix to the value returned in {tokenURI},
+     * or to the token ID if {tokenURI} is empty.
      */
-    bytes4 private constant _INTERFACE_ID_ERC721 = 0x80ac58cd;
+    function _setBaseURI(string memory baseURI_) internal virtual {
+        _baseURI = baseURI_;
+    }
+    /**
+    * @dev Returns the base URI set via {_setBaseURI}. This will be
+    * automatically added as a prefix in {tokenURI} to each token's URI, or
+    * to the token ID if no specific URI is set for that token ID.
+    */
+    function _getbaseURI() public view returns (string memory) {
+        return _baseURI;
+    }
+    // Mapping from token ID to ownership details
+    // An empty struct value does not necessarily mean the token is unowned. See _ownershipOf implementation for details.
+    mapping(uint256 => TokenOwnership) internal _ownerships;
 
-    /*
-     *     bytes4(keccak256('name()')) == 0x06fdde03
-     *     bytes4(keccak256('symbol()')) == 0x95d89b41
-     *     bytes4(keccak256('tokenURI(uint256)')) == 0xc87b56dd
-     *
-     *     => 0x06fdde03 ^ 0x95d89b41 ^ 0xc87b56dd == 0x5b5e139f
-     */
-    bytes4 private constant _INTERFACE_ID_ERC721_METADATA = 0x5b5e139f;
+    // Mapping owner address to address data
+    mapping(address => AddressData) private _addressData;
 
-    /*
-     *     bytes4(keccak256('totalSupply()')) == 0x18160ddd
-     *     bytes4(keccak256('tokenOfOwnerByIndex(address,uint256)')) == 0x2f745c59
-     *     bytes4(keccak256('tokenByIndex(uint256)')) == 0x4f6ccce7
-     *
-     *     => 0x18160ddd ^ 0x2f745c59 ^ 0x4f6ccce7 == 0x780e9d63
-     */
-    bytes4 private constant _INTERFACE_ID_ERC721_ENUMERABLE = 0x780e9d63;
+    // Mapping from token ID to approved address
+    mapping(uint256 => address) private _tokenApprovals;
+
+    // Mapping from owner to operator approvals
+    mapping(address => mapping(address => bool)) private _operatorApprovals;
+
+    constructor(string memory name_, string memory symbol_) {
+        _name = name_;
+        _symbol = symbol_;
+        _currentIndex = _startTokenId();
+    }
 
     /**
-     * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
+     * To change the starting tokenId, please override this function.
      */
-    constructor (string memory name, string memory symbol) public {
-        _name = name;
-        _symbol = symbol;
+    function _startTokenId() internal view virtual returns (uint256) {
+        return 0;
+    }
 
-        // register the supported interfaces to conform to ERC721 via ERC165
-        _registerInterface(_INTERFACE_ID_ERC721);
-        _registerInterface(_INTERFACE_ID_ERC721_METADATA);
-        _registerInterface(_INTERFACE_ID_ERC721_ENUMERABLE);
+    /**
+     * @dev Burned tokens are calculated here, use _totalMinted() if you want to count just minted tokens.
+     */
+    function totalSupply() public view returns (uint256) {
+        // Counter underflow is impossible as _burnCounter cannot be incremented
+        // more than _currentIndex - _startTokenId() times
+        unchecked {
+            return _currentIndex - _burnCounter - _startTokenId();
+        }
+    }
+
+    /**
+     * Returns the total amount of tokens minted in the contract.
+     */
+    function _totalMinted() internal view returns (uint256) {
+        // Counter underflow is impossible as _currentIndex does not decrement,
+        // and it is initialized to _startTokenId()
+        unchecked {
+            return _currentIndex - _startTokenId();
+        }
+    }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+        return
+            interfaceId == type(IERC721).interfaceId ||
+            interfaceId == type(IERC721Metadata).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /**
      * @dev See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view override returns (uint256) {
-        require(owner != address(0), "ERC721: balance query for the zero address");
+        if (owner == address(0)) revert BalanceQueryForZeroAddress();
+        return uint256(_addressData[owner].balance);
+    }
 
-        return _holderTokens[owner].length();
+    /**
+     * Returns the number of tokens minted by `owner`.
+     */
+    function _numberMinted(address owner) internal view returns (uint256) {
+        return uint256(_addressData[owner].numberMinted);
+    }
+
+    /**
+     * Returns the number of tokens burned by or on behalf of `owner`.
+     */
+    function _numberBurned(address owner) internal view returns (uint256) {
+        return uint256(_addressData[owner].numberBurned);
+    }
+
+    /**
+     * Returns the auxillary data for `owner`. (e.g. number of whitelist mint slots used).
+     */
+    function _getAux(address owner) internal view returns (uint64) {
+        return _addressData[owner].aux;
+    }
+
+    /**
+     * Sets the auxillary data for `owner`. (e.g. number of whitelist mint slots used).
+     * If there are multiple variables, please pack them into a uint64.
+     */
+    function _setAux(address owner, uint64 aux) internal {
+        _addressData[owner].aux = aux;
+    }
+
+    /**
+     * Gas spent here starts off proportional to the maximum mint batch size.
+     * It gradually moves to O(1) as tokens get transferred around in the collection over time.
+     */
+    function _ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
+        uint256 curr = tokenId;
+
+        unchecked {
+            if (_startTokenId() <= curr && curr < _currentIndex) {
+                TokenOwnership memory ownership = _ownerships[curr];
+                if (!ownership.burned) {
+                    if (ownership.addr != address(0)) {
+                        return ownership;
+                    }
+                    // Invariant:
+                    // There will always be an ownership that has an address and is not burned
+                    // before an ownership that does not have an address and is not burned.
+                    // Hence, curr will not underflow.
+                    while (true) {
+                        curr--;
+                        ownership = _ownerships[curr];
+                        if (ownership.addr != address(0)) {
+                            return ownership;
+                        }
+                    }
+                }
+            }
+        }
+        revert OwnerQueryForNonexistentToken();
     }
 
     /**
      * @dev See {IERC721-ownerOf}.
      */
     function ownerOf(uint256 tokenId) public view override returns (address) {
-        return _tokenOwners.get(tokenId, "ERC721: owner query for nonexistent token");
+        return _ownershipOf(tokenId).addr;
     }
 
     /**
      * @dev See {IERC721Metadata-name}.
      */
-    function name() public view override returns (string memory) {
+    function name() public view virtual override returns (string memory) {
         return _name;
     }
 
     /**
      * @dev See {IERC721Metadata-symbol}.
      */
-    function symbol() public view override returns (string memory) {
+    function symbol() public view virtual override returns (string memory) {
         return _symbol;
     }
 
     /**
      * @dev See {IERC721Metadata-tokenURI}.
      */
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+        if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
 
-        string memory _tokenURI = _tokenURIs[tokenId];
-
-        // If there is no base URI, return the token URI.
-        if (bytes(_baseURI).length == 0) {
-            return _tokenURI;
-        }
-        // If both are set, concatenate the baseURI and tokenURI (via abi.encodePacked).
-        if (bytes(_tokenURI).length > 0) {
-            return string(abi.encodePacked(_baseURI, _tokenURI));
-        }
-        // If there is a baseURI but no tokenURI, concatenate the tokenID to the baseURI.
-        return string(abi.encodePacked(_baseURI, tokenId.toString(), ".json"));
+        string memory baseURI = _getbaseURI();
+        return bytes(baseURI).length != 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
     }
 
-    /**
-    * @dev Returns the base URI set via {_setBaseURI}. This will be
-    * automatically added as a prefix in {tokenURI} to each token's URI, or
-    * to the token ID if no specific URI is set for that token ID.
-    */
-    function baseURI() public view returns (string memory) {
-        return _baseURI;
-    }
-
-    /**
-     * @dev See {IERC721Enumerable-tokenOfOwnerByIndex}.
-     */
-    function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256) {
-        return _holderTokens[owner].at(index);
-    }
-
-    /**
-     * @dev See {IERC721Enumerable-totalSupply}.
-     */
-    function totalSupply() public view override returns (uint256) {
-        // _tokenOwners are indexed by tokenIds, so .length() returns the number of tokenIds
-        return _tokenOwners.length();
-    }
-
-    /**
-     * @dev See {IERC721Enumerable-tokenByIndex}.
-     */
-    function tokenByIndex(uint256 index) public view override returns (uint256) {
-        (uint256 tokenId, ) = _tokenOwners.at(index);
-        return tokenId;
-    }
-
+   
     /**
      * @dev See {IERC721-approve}.
      */
-    function approve(address to, uint256 tokenId) public virtual override {
-        address owner = ownerOf(tokenId);
-        require(to != owner, "ERC721: approval to current owner");
+    function approve(address to, uint256 tokenId) public override {
+        address owner = ERC721A.ownerOf(tokenId);
+        if (to == owner) revert ApprovalToCurrentOwner();
 
-        require(_msgSender() == owner || isApprovedForAll(owner, _msgSender()),
-            "ERC721: approve caller is not owner nor approved for all"
-        );
+        if (_msgSender() != owner && !isApprovedForAll(owner, _msgSender())) {
+            revert ApprovalCallerNotOwnerNorApproved();
+        }
 
-        _approve(to, tokenId);
+        _approve(to, tokenId, owner);
     }
 
     /**
      * @dev See {IERC721-getApproved}.
      */
     function getApproved(uint256 tokenId) public view override returns (address) {
-        require(_exists(tokenId), "ERC721: approved query for nonexistent token");
+        if (!_exists(tokenId)) revert ApprovalQueryForNonexistentToken();
 
         return _tokenApprovals[tokenId];
     }
@@ -1600,7 +1832,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
      * @dev See {IERC721-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) public virtual override {
-        require(operator != _msgSender(), "ERC721: approve to caller");
+        if (operator == _msgSender()) revert ApproveToCaller();
 
         _operatorApprovals[_msgSender()][operator] = approved;
         emit ApprovalForAll(_msgSender(), operator, approved);
@@ -1609,57 +1841,45 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
     /**
      * @dev See {IERC721-isApprovedForAll}.
      */
-    function isApprovedForAll(address owner, address operator) public view override returns (bool) {
+    function isApprovedForAll(address owner, address operator) public view virtual override returns (bool) {
         return _operatorApprovals[owner][operator];
     }
 
     /**
      * @dev See {IERC721-transferFrom}.
      */
-    function transferFrom(address from, address to, uint256 tokenId) public virtual override {
-        //solhint-disable-next-line max-line-length
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
-
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override {
         _transfer(from, to, tokenId);
     }
 
     /**
      * @dev See {IERC721-safeTransferFrom}.
      */
-    function safeTransferFrom(address from, address to, uint256 tokenId) public virtual override {
-        safeTransferFrom(from, to, tokenId, "");
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override {
+        safeTransferFrom(from, to, tokenId, '');
     }
 
     /**
      * @dev See {IERC721-safeTransferFrom}.
      */
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public virtual override {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
-        _safeTransfer(from, to, tokenId, _data);
-
-    }
-
-    /**
-     * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
-     * are aware of the ERC721 protocol to prevent tokens from being forever locked.
-     *
-     * `_data` is additional data, it has no specified format and it is sent in call to `to`.
-     *
-     * This internal function is equivalent to {safeTransferFrom}, and can be used to e.g.
-     * implement alternative mechanisms to perform token transfer, such as signature-based.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must exist and be owned by `from`.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
-     *
-     * Emits a {Transfer} event.
-     */
-    function _safeTransfer(address from, address to, uint256 tokenId, bytes memory _data) internal virtual {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory _data
+    ) public virtual override {
         _transfer(from, to, tokenId);
-        require(_checkOnERC721Received(from, to, tokenId, _data), "ERC721: transfer to non ERC721Receiver implementer");
+        if (to.isContract() && !_checkContractOnERC721Received(from, to, tokenId, _data)) {
+            revert TransferToNonERC721ReceiverImplementer();
+        }
     }
 
     /**
@@ -1668,71 +1888,153 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
      * Tokens can be managed by their owner or approved accounts via {approve} or {setApprovalForAll}.
      *
      * Tokens start existing when they are minted (`_mint`),
-     * and stop existing when they are burned (`_burn`).
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return _tokenOwners.contains(tokenId);
+        return _startTokenId() <= tokenId && tokenId < _currentIndex &&
+            !_ownerships[tokenId].burned;
+    }
+
+    function _safeMint(address to, uint256 quantity) internal {
+        _safeMint(to, quantity, '');
     }
 
     /**
-     * @dev Returns whether `spender` is allowed to manage `tokenId`.
+     * @dev Safely mints `quantity` tokens and transfers them to `to`.
      *
      * Requirements:
      *
-     * - `tokenId` must exist.
-     */
-    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view returns (bool) {
-        require(_exists(tokenId), "ERC721: operator query for nonexistent token");
-        address owner = ownerOf(tokenId);
-        return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
-    }
-
-    /**
-     * @dev Safely mints `tokenId` and transfers it to `to`.
-     *
-     * Requirements:
-     d*
-     * - `tokenId` must not exist.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
+     * - `quantity` must be greater than 0.
      *
      * Emits a {Transfer} event.
      */
-    function _safeMint(address to, uint256 tokenId) internal virtual {
-        _safeMint(to, tokenId, "");
+    function _safeMint(
+        address to,
+        uint256 quantity,
+        bytes memory _data
+    ) internal {
+        _mint(to, quantity, _data, true);
     }
 
     /**
-     * @dev Same as {xref-ERC721-_safeMint-address-uint256-}[`_safeMint`], with an additional `data` parameter which is
-     * forwarded in {IERC721Receiver-onERC721Received} to contract recipients.
-     */
-    function _safeMint(address to, uint256 tokenId, bytes memory _data) internal virtual {
-        _mint(to, tokenId);
-        require(_checkOnERC721Received(address(0), to, tokenId, _data), "ERC721: transfer to non ERC721Receiver implementer");
-    }
-
-    /**
-     * @dev Mints `tokenId` and transfers it to `to`.
-     *
-     * WARNING: Usage of this method is discouraged, use {_safeMint} whenever possible
+     * @dev Mints `quantity` tokens and transfers them to `to`.
      *
      * Requirements:
      *
-     * - `tokenId` must not exist.
      * - `to` cannot be the zero address.
+     * - `quantity` must be greater than 0.
      *
      * Emits a {Transfer} event.
      */
-    function _mint(address to, uint256 tokenId) internal virtual {
-        require(to != address(0), "ERC721: mint to the zero address");
-        require(!_exists(tokenId), "ERC721: token already minted");
+    function _mint(
+        address to,
+        uint256 quantity,
+        bytes memory _data,
+        bool safe
+    ) internal {
+        uint256 startTokenId = _currentIndex;
+        if (to == address(0)) revert MintToZeroAddress();
+        if (quantity == 0) revert MintZeroQuantity();
 
-        _beforeTokenTransfer(address(0), to, tokenId);
+        _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
-        _holderTokens[to].add(tokenId);
+        // Overflows are incredibly unrealistic.
+        // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
+        // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
+        unchecked {
+            _addressData[to].balance += uint64(quantity);
+            _addressData[to].numberMinted += uint64(quantity);
 
-        _tokenOwners.set(tokenId, to);
+            _ownerships[startTokenId].addr = to;
+            _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
 
-        emit Transfer(address(0), to, tokenId);
+            uint256 updatedIndex = startTokenId;
+            uint256 end = updatedIndex + quantity;
+
+            if (safe && to.isContract()) {
+                do {
+                    emit Transfer(address(0), to, updatedIndex);
+                    if (!_checkContractOnERC721Received(address(0), to, updatedIndex++, _data)) {
+                        revert TransferToNonERC721ReceiverImplementer();
+                    }
+                } while (updatedIndex != end);
+                // Reentrancy protection
+                if (_currentIndex != startTokenId) revert();
+            } else {
+                do {
+                    emit Transfer(address(0), to, updatedIndex++);
+                } while (updatedIndex != end);
+            }
+            _currentIndex = updatedIndex;
+        }
+        _afterTokenTransfers(address(0), to, startTokenId, quantity);
+    }
+
+    /**
+     * @dev Transfers `tokenId` from `from` to `to`.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must be owned by `from`.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _transfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) private {
+        TokenOwnership memory prevOwnership = _ownershipOf(tokenId);
+
+        if (prevOwnership.addr != from) revert TransferFromIncorrectOwner();
+
+        bool isApprovedOrOwner = (_msgSender() == from ||
+            isApprovedForAll(from, _msgSender()) ||
+            getApproved(tokenId) == _msgSender());
+
+        if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
+        if (to == address(0)) revert TransferToZeroAddress();
+
+        _beforeTokenTransfers(from, to, tokenId, 1);
+
+        // Clear approvals from the previous owner
+        _approve(address(0), tokenId, from);
+
+        // Underflow of the sender's balance is impossible because we check for
+        // ownership above and the recipient's balance can't realistically overflow.
+        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
+        unchecked {
+            _addressData[from].balance -= 1;
+            _addressData[to].balance += 1;
+
+            TokenOwnership storage currSlot = _ownerships[tokenId];
+            currSlot.addr = to;
+            currSlot.startTimestamp = uint64(block.timestamp);
+
+            // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
+            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
+            uint256 nextTokenId = tokenId + 1;
+            TokenOwnership storage nextSlot = _ownerships[nextTokenId];
+            if (nextSlot.addr == address(0)) {
+                // This will suffice for checking _exists(nextTokenId),
+                // as a burned slot cannot contain the zero address.
+                if (nextTokenId != _currentIndex) {
+                    nextSlot.addr = from;
+                    nextSlot.startTimestamp = prevOwnership.startTimestamp;
+                }
+            }
+        }
+
+        emit Transfer(from, to, tokenId);
+        _afterTokenTransfers(from, to, tokenId, 1);
+    }
+
+    /**
+     * @dev This is equivalent to _burn(tokenId, false)
+     */
+    function _burn(uint256 tokenId) internal virtual {
+        _burn(tokenId, false);
     }
 
     /**
@@ -1745,78 +2047,77 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
      *
      * Emits a {Transfer} event.
      */
-    function _burn(uint256 tokenId) internal virtual {
-        address owner = ownerOf(tokenId);
+    function _burn(uint256 tokenId, bool approvalCheck) internal virtual {
+        TokenOwnership memory prevOwnership = _ownershipOf(tokenId);
 
-        _beforeTokenTransfer(owner, address(0), tokenId);
+        address from = prevOwnership.addr;
 
-        // Clear approvals
-        _approve(address(0), tokenId);
+        if (approvalCheck) {
+            bool isApprovedOrOwner = (_msgSender() == from ||
+                isApprovedForAll(from, _msgSender()) ||
+                getApproved(tokenId) == _msgSender());
 
-        // Clear metadata (if any)
-        if (bytes(_tokenURIs[tokenId]).length != 0) {
-            delete _tokenURIs[tokenId];
+            if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
         }
 
-        _holderTokens[owner].remove(tokenId);
-
-        _tokenOwners.remove(tokenId);
-
-        emit Transfer(owner, address(0), tokenId);
-    }
-
-    /**
-     * @dev Transfers `tokenId` from `from` to `to`.
-     *  As opposed to {transferFrom}, this imposes no restrictions on msg.sender.
-     *
-     * Requirements:
-     *
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must be owned by `from`.
-     *
-     * Emits a {Transfer} event.
-     */
-    function _transfer(address from, address to, uint256 tokenId) internal virtual {
-        require(ownerOf(tokenId) == from, "ERC721: transfer of token that is not own");
-        require(to != address(0), "ERC721: transfer to the zero address");
-
-        _beforeTokenTransfer(from, to, tokenId);
+        _beforeTokenTransfers(from, address(0), tokenId, 1);
 
         // Clear approvals from the previous owner
-        _approve(address(0), tokenId);
+        _approve(address(0), tokenId, from);
 
-        _holderTokens[from].remove(tokenId);
-        _holderTokens[to].add(tokenId);
+        // Underflow of the sender's balance is impossible because we check for
+        // ownership above and the recipient's balance can't realistically overflow.
+        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
+        unchecked {
+            AddressData storage addressData = _addressData[from];
+            addressData.balance -= 1;
+            addressData.numberBurned += 1;
 
-        _tokenOwners.set(tokenId, to);
+            // Keep track of who burned the token, and the timestamp of burning.
+            TokenOwnership storage currSlot = _ownerships[tokenId];
+            currSlot.addr = from;
+            currSlot.startTimestamp = uint64(block.timestamp);
+            currSlot.burned = true;
 
-        emit Transfer(from, to, tokenId);
+            // If the ownership slot of tokenId+1 is not explicitly set, that means the burn initiator owns it.
+            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
+            uint256 nextTokenId = tokenId + 1;
+            TokenOwnership storage nextSlot = _ownerships[nextTokenId];
+            if (nextSlot.addr == address(0)) {
+                // This will suffice for checking _exists(nextTokenId),
+                // as a burned slot cannot contain the zero address.
+                if (nextTokenId != _currentIndex) {
+                    nextSlot.addr = from;
+                    nextSlot.startTimestamp = prevOwnership.startTimestamp;
+                }
+            }
+        }
+
+        emit Transfer(from, address(0), tokenId);
+        _afterTokenTransfers(from, address(0), tokenId, 1);
+
+        // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
+        unchecked {
+            _burnCounter++;
+        }
     }
 
     /**
-     * @dev Sets `_tokenURI` as the tokenURI of `tokenId`.
+     * @dev Approve `to` to operate on `tokenId`
      *
-     * Requirements:
-     *
-     * - `tokenId` must exist.
+     * Emits a {Approval} event.
      */
-    function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal virtual {
-        require(_exists(tokenId), "ERC721Metadata: URI set of nonexistent token");
-        _tokenURIs[tokenId] = _tokenURI;
+    function _approve(
+        address to,
+        uint256 tokenId,
+        address owner
+    ) private {
+        _tokenApprovals[tokenId] = to;
+        emit Approval(owner, to, tokenId);
     }
 
     /**
-     * @dev Internal function to set the base URI for all token IDs. It is
-     * automatically added as a prefix to the value returned in {tokenURI},
-     * or to the token ID if {tokenURI} is empty.
-     */
-    function _setBaseURI(string memory baseURI_) internal virtual {
-        _baseURI = baseURI_;
-    }
-
-    /**
-     * @dev Internal function to invoke {IERC721Receiver-onERC721Received} on a target address.
-     * The call is not executed if the target address is not a contract.
+     * @dev Internal function to invoke {IERC721Receiver-onERC721Received} on a target contract.
      *
      * @param from address representing the previous owner of the given token ID
      * @param to target address that will receive the tokens
@@ -1824,44 +2125,75 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
      * @param _data bytes optional data to send along with the call
      * @return bool whether the call correctly returned the expected magic value
      */
-    function _checkOnERC721Received(address from, address to, uint256 tokenId, bytes memory _data)
-        private returns (bool)
-    {
-        if (!to.isContract()) {
-            return true;
+    function _checkContractOnERC721Received(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory _data
+    ) private returns (bool) {
+        try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (bytes4 retval) {
+            return retval == IERC721Receiver(to).onERC721Received.selector;
+        } catch (bytes memory reason) {
+            if (reason.length == 0) {
+                revert TransferToNonERC721ReceiverImplementer();
+            } else {
+                assembly {
+                    revert(add(32, reason), mload(reason))
+                }
+            }
         }
-        bytes memory returndata = to.functionCall(abi.encodeWithSelector(
-            IERC721Receiver(to).onERC721Received.selector,
-            _msgSender(),
-            from,
-            tokenId,
-            _data
-        ), "ERC721: transfer to non ERC721Receiver implementer");
-        bytes4 retval = abi.decode(returndata, (bytes4));
-        return (retval == _ERC721_RECEIVED);
-    }
-
-    function _approve(address to, uint256 tokenId) private {
-        _tokenApprovals[tokenId] = to;
-        emit Approval(ownerOf(tokenId), to, tokenId);
     }
 
     /**
-     * @dev Hook that is called before any token transfer. This includes minting
-     * and burning.
+     * @dev Hook that is called before a set of serially-ordered token ids are about to be transferred. This includes minting.
+     * And also called before burning one token.
+     *
+     * startTokenId - the first token id to be transferred
+     * quantity - the amount to be transferred
      *
      * Calling conditions:
      *
-     * - When `from` and `to` are both non-zero, ``from``'s `tokenId` will be
+     * - When `from` and `to` are both non-zero, `from`'s `tokenId` will be
      * transferred to `to`.
      * - When `from` is zero, `tokenId` will be minted for `to`.
-     * - When `to` is zero, ``from``'s `tokenId` will be burned.
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     *
-     * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+     * - When `to` is zero, `tokenId` will be burned by `from`.
+     * - `from` and `to` are never both zero.
      */
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual { }
+    function _beforeTokenTransfers(
+        address from,
+        address to,
+        uint256 startTokenId,
+        uint256 quantity
+    ) internal virtual {}
+    
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal virtual {}
+
+    /**
+     * @dev Hook that is called after a set of serially-ordered token ids have been transferred. This includes
+     * minting.
+     * And also called after one token has been burned.
+     *
+     * startTokenId - the first token id to be transferred
+     * quantity - the amount to be transferred
+     *
+     * Calling conditions:
+     *
+     * - When `from` and `to` are both non-zero, `from`'s `tokenId` has been
+     * transferred to `to`.
+     * - When `from` is zero, `tokenId` has been minted for `to`.
+     * - When `to` is zero, `tokenId` has been burned by `from`.
+     * - `from` and `to` are never both zero.
+     */
+    function _afterTokenTransfers(
+        address from,
+        address to,
+        uint256 startTokenId,
+        uint256 quantity
+    ) internal virtual {}
 }
 
 // File: contracts\token\ERC721\ERC721Burnable.sol
@@ -1870,7 +2202,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
  * @title ERC721 Burnable Token
  * @dev ERC721 Token that can be irreversibly burned (destroyed).
  */
-abstract contract ERC721Burnable is Context, ERC721 {
+abstract contract ERC721Burnable is Context, ERC721A {
     /**
      * @dev Burns `tokenId`. See {ERC721-_burn}.
      *
@@ -1879,8 +2211,6 @@ abstract contract ERC721Burnable is Context, ERC721 {
      * - The caller must own `tokenId` or be an approved operator.
      */
     function burn(uint256 tokenId) public virtual {
-        //solhint-disable-next-line max-line-length
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721Burnable: caller is not owner nor approved");
         _burn(tokenId);
     }
 }
@@ -1896,7 +2226,7 @@ abstract contract ERC721Burnable is Context, ERC721 {
  * the functions of your contract. Note that they will not be pausable by
  * simply including this module, only once the modifiers are put in place.
  */
-contract Pausable is Context {
+abstract contract Pausable is Context {
     /**
      * @dev Emitted when the pause is triggered by `account`.
      */
@@ -1912,14 +2242,14 @@ contract Pausable is Context {
     /**
      * @dev Initializes the contract in unpaused state.
      */
-    constructor () internal {
+    constructor() {
         _paused = false;
     }
 
     /**
      * @dev Returns true if the contract is paused, and false otherwise.
      */
-    function paused() public view returns (bool) {
+    function paused() public view virtual returns (bool) {
         return _paused;
     }
 
@@ -1931,7 +2261,7 @@ contract Pausable is Context {
      * - The contract must not be paused.
      */
     modifier whenNotPaused() {
-        require(!_paused, "Pausable: paused");
+        require(!paused(), "Pausable: paused");
         _;
     }
 
@@ -1943,7 +2273,7 @@ contract Pausable is Context {
      * - The contract must be paused.
      */
     modifier whenPaused() {
-        require(_paused, "Pausable: not paused");
+        require(paused(), "Pausable: not paused");
         _;
     }
 
@@ -1981,7 +2311,7 @@ contract Pausable is Context {
  * period, or having an emergency switch for freezing all token transfers in the
  * event of a large bug.
  */
-abstract contract ERC721Pausable is ERC721, Pausable {
+abstract contract ERC721Pausable is ERC721A, Pausable {
     /**
      * @dev See {ERC721-_beforeTokenTransfer}.
      *
@@ -1989,7 +2319,11 @@ abstract contract ERC721Pausable is ERC721, Pausable {
      *
      * - the contract must not be paused.
      */
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override {
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal virtual override {
         super._beforeTokenTransfer(from, to, tokenId);
 
         require(!paused(), "ERC721Pausable: token transfer while paused");
@@ -2013,7 +2347,7 @@ abstract contract ERC721Pausable is ERC721, Pausable {
  * roles, as well as the default admin role, which will let it grant both minter
  * and pauser roles to other accounts.
  */
-contract NonFungibleToken is Context, AccessControl, ERC721, ERC721Pausable {
+contract NonFungibleToken is Context, AccessControl, ERC721A, ERC721Pausable {
     using Counters for Counters.Counter;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -2032,7 +2366,7 @@ contract NonFungibleToken is Context, AccessControl, ERC721, ERC721Pausable {
      * Token URIs will be autogenerated based on `baseURI` and their token IDs.
      * See {ERC721-tokenURI}.
      */
-    constructor(string memory name, string memory symbol, string memory baseURI) public ERC721(name, symbol) {
+    constructor(string memory name, string memory symbol, string memory baseURI) public ERC721A(name, symbol) {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
 
         _setupRole(MINTER_ROLE, _msgSender());
@@ -2089,7 +2423,7 @@ contract NonFungibleToken is Context, AccessControl, ERC721, ERC721Pausable {
       require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
       for (uint256 i = 0; i < _beneficiaries.length; i++) {
 
-        _mint(_beneficiaries[i], _tokenIdTracker.current() + 1);
+        _safeMint(_beneficiaries[i], _tokenIdTracker.current() + 1);
         _tokenIdTracker.increment();
       }
     }
@@ -2098,7 +2432,7 @@ contract NonFungibleToken is Context, AccessControl, ERC721, ERC721Pausable {
 
 
     function contractURI() public view returns (string memory) {
-        return string(abi.encodePacked(baseURI(), "contract-metadata.json"));
+        return string(abi.encodePacked(_getbaseURI(), "contract-metadata.json"));
     }
 
 
@@ -2121,12 +2455,12 @@ contract NonFungibleToken is Context, AccessControl, ERC721, ERC721Pausable {
         require(mintingEnabled, "Minting not enabled !");
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
-        _mint(to, _tokenIdTracker.current() + 1);
+        _safeMint(to, _tokenIdTracker.current() + 1);
         _tokenIdTracker.increment();
         require(balanceOf(to) <= maxPerWallet, "Max NFTs reached by wallet");
     }
 
-   function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721Pausable) {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721A, ERC721Pausable) {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 }
