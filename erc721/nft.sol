@@ -933,42 +933,6 @@ library SafeMath {
     }
 }
 
-// File: contracts\utils\Counters.sol
-
-/**
- * @title Counters
- * @author Matt Condon (@shrugs)
- * @dev Provides counters that can only be incremented or decremented by one. This can be used e.g. to track the number
- * of elements in a mapping, issuing ERC721 ids, or counting request ids.
- *
- * Include with `using Counters for Counters.Counter;`
- * Since it is not possible to overflow a 256 bit integer with increments of one, `increment` can skip the {SafeMath}
- * overflow check, thereby saving gas. This does assume however correct usage, in that the underlying `_value` is never
- * directly accessed.
- */
-library Counters {
-    using SafeMath for uint256;
-
-    struct Counter {
-        // This variable should never be directly accessed by users of the library: interactions must be restricted to
-        // the library's function. As of Solidity v0.5.2, this cannot be enforced, though there is a proposal to add
-        // this feature: see https://github.com/ethereum/solidity/issues/4637
-        uint256 _value; // default: 0
-    }
-
-    function current(Counter storage counter) internal view returns (uint256) {
-        return counter._value;
-    }
-
-    function increment(Counter storage counter) internal {
-        // The {SafeMath} overflow check can be skipped here, see the comment at the top
-        counter._value += 1;
-    }
-
-    function decrement(Counter storage counter) internal {
-        counter._value = counter._value.sub(1);
-    }
-}
 
 // File: contracts\introspection\IERC165.sol
 
@@ -2348,7 +2312,6 @@ abstract contract ERC721Pausable is ERC721A, Pausable {
  * and pauser roles to other accounts.
  */
 contract NonFungibleToken is Context, AccessControl, ERC721A, ERC721Pausable {
-    using Counters for Counters.Counter;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
@@ -2356,8 +2319,6 @@ contract NonFungibleToken is Context, AccessControl, ERC721A, ERC721Pausable {
     bool public whitelistingEnabled = false;
     bool public mintingEnabled = false;
     uint256 public maxPerWallet = 100;
-
-    Counters.Counter private _tokenIdTracker;
 
     /**
      * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
@@ -2423,8 +2384,7 @@ contract NonFungibleToken is Context, AccessControl, ERC721A, ERC721Pausable {
       require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
       for (uint256 i = 0; i < _beneficiaries.length; i++) {
 
-        _safeMint(_beneficiaries[i], _tokenIdTracker.current() + 1);
-        _tokenIdTracker.increment();
+        _safeMint(_beneficiaries[i], 1);
       }
     }
 
@@ -2455,11 +2415,19 @@ contract NonFungibleToken is Context, AccessControl, ERC721A, ERC721Pausable {
         require(mintingEnabled, "Minting not enabled !");
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
-        _safeMint(to, _tokenIdTracker.current() + 1);
-        _tokenIdTracker.increment();
+        _safeMint(to, 1);
         require(balanceOf(to) <= maxPerWallet, "Max NFTs reached by wallet");
     }
+    function mint(address to, uint256 quantity) public virtual {
+        require(hasRole(MINTER_ROLE, _msgSender()), "NonFungibleToken: must have minter role to mint");
+        require(whitelists[to] || ! whitelistingEnabled, "User not whitelisted !");
 
+        require(mintingEnabled, "Minting not enabled !");
+        // We cannot just use balanceOf to create the new tokenId because tokens
+        // can be burned (destroyed), so we need a separate counter.
+        _safeMint(to, quantity);
+        require(balanceOf(to) <= maxPerWallet, "Max NFTs reached by wallet");
+    }
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721A, ERC721Pausable) {
         super._beforeTokenTransfer(from, to, tokenId);
     }
