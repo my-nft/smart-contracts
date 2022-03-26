@@ -775,7 +775,7 @@ interface IERC20 {
 // Modern ERC721 Token interface
 interface IERC721 {
     function transferFrom(address from, address to, uint tokenId) external;
-    function mint(address to) external;
+    function mint(address to, uint256 count) external;
     function totalSupply() external view returns(uint256);
 }
 
@@ -849,7 +849,7 @@ contract NFT_Market is Ownable {
       uint256 totalMinted = IERC721(getTrustedNftAddress()).totalSupply();
       return totalMinted.add(count) < maxFree;
     }
-
+    
     function mint(uint256 count) external payable {
         // owner can mint without fee
         // other users need to pay a fixed fee in token
@@ -864,9 +864,7 @@ contract NFT_Market is Ownable {
             require(success, "Address: unable to send value, recipient may have reverted");
             totalSales = totalSales.add(msg.value);
         }
-        for(uint i = 0; i < count; i++){
-          IERC721(getTrustedNftAddress()).mint(_msgSender());
-        }
+        IERC721(getTrustedNftAddress()).mint(_msgSender(), count);
 
     }
 
