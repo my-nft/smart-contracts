@@ -1,0 +1,3 @@
+the etherscan verification tool can't decode the con=structor params, so you need tom use this tool:
+https://abi.hashex.org/
+to get right constructor argument

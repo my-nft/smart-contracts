@@ -1995,15 +1995,6 @@ abstract contract ERC721Pausable is ERC721, Pausable {
     }
 }
 
-interface Cost {
-    function cost() external view returns(uint256);
-}
-
-interface CostAddress {
-    function getOracle(uint _id) external view returns(address);
-}
-
-
 
 // File: contracts\presets\NonFungibleToken.sol
 
@@ -2038,7 +2029,6 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
     uint256 private _maxPerWallet;
     uint256 public numberOfWhitelisted;
 
-   // mapping (address => bool) public whitelists;
     Counters.Counter private _tokenIdTracker;
 
 
@@ -2172,8 +2162,4 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
       }
     }
 
-
- /*   function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721Pausable) {
-        super._beforeTokenTransfer(from, to, tokenId);
-    }*/
 }
