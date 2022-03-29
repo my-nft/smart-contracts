@@ -1996,13 +1996,14 @@ abstract contract ERC721Pausable is ERC721, Pausable {
 }
 
 interface Cost {
-    function eth() external view returns(uint256);
-    function bsc() external view returns(uint256);
-    function poly() external view returns(uint256);
-    function rsk() external view returns(uint256);
-    function avax() external view returns(uint256);
-
+    function cost() external view returns(uint256);
 }
+
+interface CostAddress {
+    function getOracle(uint _id) external view returns(address);
+}
+
+
 
 // File: contracts\presets\NonFungibleToken.sol
 
@@ -2028,13 +2029,7 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
 
     address public owner;
     address payable public admin = 0xFdf9851EE0F375F513098Da24b9F60629EC57624;
-    address payable public costOracleRinkeby = 0x255eB4D2C937586b3dE6f1cA41954263028ae41b;
-    address payable public costOracleETH = 0x3285b253b0F82A4447344843086E4DD8F0aB154f;
-    address payable public costOracleBSC = 0xE27FED0434c12a7DE946465D96C2F401590E897d;
-    address payable public costOraclePOLY = 0x7F53931318d995b03ea665e83c04B6B4D803Aa74;
-    address payable public costOracleXDAI = 0x76b294D4708B61891F36Ee12a2c9339BE2a61279;
-    address payable public costOracleRSK = 0x255eB4D2C937586b3dE6f1cA41954263028ae41b; //not yet activated
-    address payable public costOracleAVAX = 0x255eB4D2C937586b3dE6f1cA41954263028ae41b; //not activated
+
     uint256 public fee = 1e17;
     bool public whitelistingEnabled = false;
     bool public mintingEnabled = true;
@@ -2046,13 +2041,6 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
    // mapping (address => bool) public whitelists;
     Counters.Counter private _tokenIdTracker;
 
-    function getChainID() internal view returns (uint256) {
-        uint256 id;
-        assembly {
-            id := chainid()
-        }
-            return id;
-    }
 
     /**
      * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
@@ -2062,21 +2050,6 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
      * See {ERC721-tokenURI}.
      */
     constructor(string memory name, string memory symbol, string memory baseURI, uint256 maxPerWallet) public payable ERC721(name, symbol) {
-
-        uint chain = getChainID();
-        if(chain == 1){
-            fee = Cost(costOracleETH).eth();
-        }else if(chain == 56){
-            fee = Cost(costOracleBSC).bsc();
-        }else if (chain == 137){
-            fee = Cost(costOraclePOLY).poly();
-        }else if(chain == 30){
-            fee = Cost(costOracleETH).rsk();
-        }else if(chain == 43114){
-            fee = Cost(costOracleAVAX).avax();
-        }else if(chain == 100){
-            fee = Cost(costOracleXDAI).avax();
-        }
 
         require(msg.value >= fee, "NonFungibleToken: must pay required fees");
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
