@@ -1,5 +1,29 @@
-// SPDX-License-Identifier: MIT
-pragma solidity 0.8.4;
+// Sources flattened with hardhat v2.9.2 https://hardhat.org
+
+// File contracts/dependencies/Context.sol
+
+/**
+ * @dev Provides information about the current execution context, including the
+ * sender of the transaction and its data. While these are generally available
+ * via msg.sender and msg.data, they should not be accessed in such a direct
+ * manner, since when dealing with meta-transactions the account sending and
+ * paying for execution may not be the actual sender (as far as an application
+ * is concerned).
+ *
+ * This contract is only required for intermediate, library-like contracts.
+ */
+abstract contract Context {
+    function _msgSender() internal view virtual returns (address) {
+        return msg.sender;
+    }
+
+    function _msgData() internal view virtual returns (bytes calldata) {
+        return msg.data;
+    }
+}
+
+
+// File contracts/dependencies/EnumerableSet.sol
 
 /**
  * @dev Library for managing
@@ -353,7 +377,9 @@ library EnumerableSet {
         return result;
     }
 }
-// File: contracts\utils\Address.sol
+
+
+// File contracts/dependencies/Address.sol
 
 /**
  * @dev Collection of functions related to the address type
@@ -382,8 +408,9 @@ library Address {
         // constructor execution.
 
         uint256 size;
-        // solhint-disable-next-line no-inline-assembly
-        assembly { size := extcodesize(account) }
+        assembly {
+            size := extcodesize(account)
+        }
         return size > 0;
     }
 
@@ -406,14 +433,13 @@ library Address {
     function sendValue(address payable recipient, uint256 amount) internal {
         require(address(this).balance >= amount, "Address: insufficient balance");
 
-        // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
-        (bool success, ) = recipient.call{ value: amount }("");
+        (bool success, ) = recipient.call{value: amount}("");
         require(success, "Address: unable to send value, recipient may have reverted");
     }
 
     /**
      * @dev Performs a Solidity function call using a low level `call`. A
-     * plain`call` is an unsafe replacement for a function call: use this
+     * plain `call` is an unsafe replacement for a function call: use this
      * function instead.
      *
      * If `target` reverts with a revert reason, it is bubbled up by this
@@ -430,7 +456,7 @@ library Address {
      * _Available since v3.1._
      */
     function functionCall(address target, bytes memory data) internal returns (bytes memory) {
-      return functionCall(target, data, "Address: low-level call failed");
+        return functionCall(target, data, "Address: low-level call failed");
     }
 
     /**
@@ -439,7 +465,11 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCall(address target, bytes memory data, string memory errorMessage) internal returns (bytes memory) {
+    function functionCall(
+        address target,
+        bytes memory data,
+        string memory errorMessage
+    ) internal returns (bytes memory) {
         return functionCallWithValue(target, data, 0, errorMessage);
     }
 
@@ -454,7 +484,11 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCallWithValue(address target, bytes memory data, uint256 value) internal returns (bytes memory) {
+    function functionCallWithValue(
+        address target,
+        bytes memory data,
+        uint256 value
+    ) internal returns (bytes memory) {
         return functionCallWithValue(target, data, value, "Address: low-level call with value failed");
     }
 
@@ -464,13 +498,17 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCallWithValue(address target, bytes memory data, uint256 value, string memory errorMessage) internal returns (bytes memory) {
+    function functionCallWithValue(
+        address target,
+        bytes memory data,
+        uint256 value,
+        string memory errorMessage
+    ) internal returns (bytes memory) {
         require(address(this).balance >= value, "Address: insufficient balance for call");
         require(isContract(target), "Address: call to non-contract");
 
-        // solhint-disable-next-line avoid-low-level-calls
-        (bool success, bytes memory returndata) = target.call{ value: value }(data);
-        return _verifyCallResult(success, returndata, errorMessage);
+        (bool success, bytes memory returndata) = target.call{value: value}(data);
+        return verifyCallResult(success, returndata, errorMessage);
     }
 
     /**
@@ -489,19 +527,22 @@ library Address {
      *
      * _Available since v3.3._
      */
-    function functionStaticCall(address target, bytes memory data, string memory errorMessage) internal view returns (bytes memory) {
+    function functionStaticCall(
+        address target,
+        bytes memory data,
+        string memory errorMessage
+    ) internal view returns (bytes memory) {
         require(isContract(target), "Address: static call to non-contract");
 
-        // solhint-disable-next-line avoid-low-level-calls
         (bool success, bytes memory returndata) = target.staticcall(data);
-        return _verifyCallResult(success, returndata, errorMessage);
+        return verifyCallResult(success, returndata, errorMessage);
     }
 
     /**
      * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],
      * but performing a delegate call.
      *
-     * _Available since v3.3._
+     * _Available since v3.4._
      */
     function functionDelegateCall(address target, bytes memory data) internal returns (bytes memory) {
         return functionDelegateCall(target, data, "Address: low-level delegate call failed");
@@ -511,17 +552,30 @@ library Address {
      * @dev Same as {xref-Address-functionCall-address-bytes-string-}[`functionCall`],
      * but performing a delegate call.
      *
-     * _Available since v3.3._
+     * _Available since v3.4._
      */
-    function functionDelegateCall(address target, bytes memory data, string memory errorMessage) internal returns (bytes memory) {
+    function functionDelegateCall(
+        address target,
+        bytes memory data,
+        string memory errorMessage
+    ) internal returns (bytes memory) {
         require(isContract(target), "Address: delegate call to non-contract");
 
-        // solhint-disable-next-line avoid-low-level-calls
         (bool success, bytes memory returndata) = target.delegatecall(data);
-        return _verifyCallResult(success, returndata, errorMessage);
+        return verifyCallResult(success, returndata, errorMessage);
     }
 
-    function _verifyCallResult(bool success, bytes memory returndata, string memory errorMessage) private pure returns(bytes memory) {
+    /**
+     * @dev Tool to verifies that a low level call was successful, and revert if it wasn't, either by bubbling the
+     * revert reason using the provided one.
+     *
+     * _Available since v4.3._
+     */
+    function verifyCallResult(
+        bool success,
+        bytes memory returndata,
+        string memory errorMessage
+    ) internal pure returns (bytes memory) {
         if (success) {
             return returndata;
         } else {
@@ -529,7 +583,6 @@ library Address {
             if (returndata.length > 0) {
                 // The easiest way to bubble the revert reason is using memory via assembly
 
-                // solhint-disable-next-line no-inline-assembly
                 assembly {
                     let returndata_size := mload(returndata)
                     revert(add(32, returndata), returndata_size)
@@ -541,29 +594,8 @@ library Address {
     }
 }
 
-// File: contracts\GSN\Context.sol
 
-/*
- * @dev Provides information about the current execution context, including the
- * sender of the transaction and its data. While these are generally available
- * via msg.sender and msg.data, they should not be accessed in such a direct
- * manner, since when dealing with GSN meta-transactions the account sending and
- * paying for execution may not be the actual sender (as far as an application
- * is concerned).
- *
- * This contract is only required for intermediate, library-like contracts.
- */
-abstract contract Context {
-    function _msgSender() internal view virtual returns (address) {
-        return msg.sender;
-    }
-
-    function _msgData() internal view virtual returns (bytes calldata) {
-        return msg.data;
-    }
-}
-
-// File: contracts\access\AccessControl.sol
+// File contracts/dependencies/AccessControl.sol
 
 /**
  * @dev Contract module that allows children to implement role-based access
@@ -775,166 +807,8 @@ abstract contract AccessControl is Context {
     }
 }
 
-// File: contracts\math\SafeMath.sol
 
-/**
- * @dev Wrappers over Solidity's arithmetic operations with added overflow
- * checks.
- *
- * Arithmetic operations in Solidity wrap on overflow. This can easily result
- * in bugs, because programmers usually assume that an overflow raises an
- * error, which is the standard behavior in high level programming languages.
- * `SafeMath` restores this intuition by reverting the transaction when an
- * operation overflows.
- *
- * Using this library instead of the unchecked operations eliminates an entire
- * class of bugs, so it's recommended to use it always.
- */
-library SafeMath {
-    /**
-     * @dev Returns the addition of two unsigned integers, reverting on
-     * overflow.
-     *
-     * Counterpart to Solidity's `+` operator.
-     *
-     * Requirements:
-     *
-     * - Addition cannot overflow.
-     */
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        require(c >= a, "SafeMath: addition overflow");
-
-        return c;
-    }
-
-    /**
-     * @dev Returns the subtraction of two unsigned integers, reverting on
-     * overflow (when the result is negative).
-     *
-     * Counterpart to Solidity's `-` operator.
-     *
-     * Requirements:
-     *
-     * - Subtraction cannot overflow.
-     */
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        return sub(a, b, "SafeMath: subtraction overflow");
-    }
-
-    /**
-     * @dev Returns the subtraction of two unsigned integers, reverting with custom message on
-     * overflow (when the result is negative).
-     *
-     * Counterpart to Solidity's `-` operator.
-     *
-     * Requirements:
-     *
-     * - Subtraction cannot overflow.
-     */
-    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        require(b <= a, errorMessage);
-        uint256 c = a - b;
-
-        return c;
-    }
-
-    /**
-     * @dev Returns the multiplication of two unsigned integers, reverting on
-     * overflow.
-     *
-     * Counterpart to Solidity's `*` operator.
-     *
-     * Requirements:
-     *
-     * - Multiplication cannot overflow.
-     */
-    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
-        // benefit is lost if 'b' is also tested.
-        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
-        if (a == 0) {
-            return 0;
-        }
-
-        uint256 c = a * b;
-        require(c / a == b, "SafeMath: multiplication overflow");
-
-        return c;
-    }
-
-    /**
-     * @dev Returns the integer division of two unsigned integers. Reverts on
-     * division by zero. The result is rounded towards zero.
-     *
-     * Counterpart to Solidity's `/` operator. Note: this function uses a
-     * `revert` opcode (which leaves remaining gas untouched) while Solidity
-     * uses an invalid opcode to revert (consuming all remaining gas).
-     *
-     * Requirements:
-     *
-     * - The divisor cannot be zero.
-     */
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        return div(a, b, "SafeMath: division by zero");
-    }
-
-    /**
-     * @dev Returns the integer division of two unsigned integers. Reverts with custom message on
-     * division by zero. The result is rounded towards zero.
-     *
-     * Counterpart to Solidity's `/` operator. Note: this function uses a
-     * `revert` opcode (which leaves remaining gas untouched) while Solidity
-     * uses an invalid opcode to revert (consuming all remaining gas).
-     *
-     * Requirements:
-     *
-     * - The divisor cannot be zero.
-     */
-    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        require(b > 0, errorMessage);
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-
-        return c;
-    }
-
-    /**
-     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
-     * Reverts when dividing by zero.
-     *
-     * Counterpart to Solidity's `%` operator. This function uses a `revert`
-     * opcode (which leaves remaining gas untouched) while Solidity uses an
-     * invalid opcode to revert (consuming all remaining gas).
-     *
-     * Requirements:
-     *
-     * - The divisor cannot be zero.
-     */
-    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
-        return mod(a, b, "SafeMath: modulo by zero");
-    }
-
-    /**
-     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
-     * Reverts with custom message when dividing by zero.
-     *
-     * Counterpart to Solidity's `%` operator. This function uses a `revert`
-     * opcode (which leaves remaining gas untouched) while Solidity uses an
-     * invalid opcode to revert (consuming all remaining gas).
-     *
-     * Requirements:
-     *
-     * - The divisor cannot be zero.
-     */
-    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        require(b != 0, errorMessage);
-        return a % b;
-    }
-}
-
-
-// File: contracts\introspection\IERC165.sol
+// File contracts/dependencies/IERC165.sol
 
 /**
  * @dev Interface of the ERC165 standard, as defined in the
@@ -955,9 +829,41 @@ interface IERC165 {
      * This function call must use less than 30 000 gas.
      */
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
+    /*
+     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IERC165).interfaceId;
+    }
+    */
 }
 
-// File: contracts\token\ERC721\IERC721.sol
+
+// File contracts/dependencies/ERC165.sol
+
+/**
+ * @dev Implementation of the {IERC165} interface.
+ *
+ * Contracts that want to implement ERC165 should inherit from this contract and override {supportsInterface} to check
+ * for the additional interface id that will be supported. For example:
+ *
+ * ```solidity
+ * function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+ *     return interfaceId == type(MyInterface).interfaceId || super.supportsInterface(interfaceId);
+ * }
+ * ```
+ *
+ * Alternatively, {ERC165Storage} provides an easier to use but more expensive implementation.
+ */
+abstract contract ERC165 is IERC165 {
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IERC165).interfaceId;
+    }
+}
+
+
+// File contracts/dependencies/IERC721.sol
 
 /**
  * @dev Required interface of an ERC721 compliant contract.
@@ -967,7 +873,7 @@ interface IERC721 is IERC165 {
      * @dev Emitted when `tokenId` token is transferred from `from` to `to`.
      */
     event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
-
+    
     /**
      * @dev Emitted when `owner` enables `approved` to manage the `tokenId` token.
      */
@@ -1006,7 +912,11 @@ interface IERC721 is IERC165 {
      *
      * Emits a {Transfer} event.
      */
-    function safeTransferFrom(address from, address to, uint256 tokenId) external;
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) external;
 
     /**
      * @dev Transfers `tokenId` token from `from` to `to`.
@@ -1022,8 +932,11 @@ interface IERC721 is IERC165 {
      *
      * Emits a {Transfer} event.
      */
-    function transferFrom(address from, address to, uint256 tokenId) external;
-
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) external;
     /**
      * @dev Gives permission to `to` to transfer `tokenId` token to another account.
      * The approval is cleared when the token is transferred.
@@ -1068,29 +981,34 @@ interface IERC721 is IERC165 {
     function isApprovedForAll(address owner, address operator) external view returns (bool);
 
     /**
-      * @dev Safely transfers `tokenId` token from `from` to `to`.
-      *
-      * Requirements:
-      *
+     * @dev Safely transfers `tokenId` token from `from` to `to`.
+     *
+     * Requirements:
+     *
      * - `from` cannot be the zero address.
      * - `to` cannot be the zero address.
-      * - `tokenId` token must exist and be owned by `from`.
-      * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
-      * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
-      *
-      * Emits a {Transfer} event.
-      */
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;
+     * - `tokenId` token must exist and be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
+     *
+     * Emits a {Transfer} event.
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes calldata data
+    ) external;
 }
 
-// File: contracts\token\ERC721\IERC721Metadata.sol
+
+// File contracts/dependencies/IERC721Metadata.sol
 
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional metadata extension
  * @dev See https://eips.ethereum.org/EIPS/eip-721
  */
 interface IERC721Metadata is IERC721 {
-
     /**
      * @dev Returns the token collection name.
      */
@@ -1107,33 +1025,8 @@ interface IERC721Metadata is IERC721 {
     function tokenURI(uint256 tokenId) external view returns (string memory);
 }
 
-// File: contracts\token\ERC721\IERC721Enumerable.sol
 
-/**
- * @title ERC-721 Non-Fungible Token Standard, optional enumeration extension
- * @dev See https://eips.ethereum.org/EIPS/eip-721
- */
-interface IERC721Enumerable is IERC721 {
-
-    /**
-     * @dev Returns the total amount of tokens stored by the contract.
-     */
-    function totalSupply() external view returns (uint256);
-
-    /**
-     * @dev Returns a token ID owned by `owner` at a given `index` of its token list.
-     * Use along with {balanceOf} to enumerate all of ``owner``'s tokens.
-     */
-    function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256 tokenId);
-
-    /**
-     * @dev Returns a token ID at a given `index` of all the tokens stored by the contract.
-     * Use along with {totalSupply} to enumerate all tokens.
-     */
-    function tokenByIndex(uint256 index) external view returns (uint256);
-}
-
-// File: contracts\token\ERC721\IERC721Receiver.sol
+// File contracts/dependencies/IERC721Receiver.sol
 
 /**
  * @title ERC721 token receiver interface
@@ -1150,358 +1043,25 @@ interface IERC721Receiver {
      *
      * The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
      */
-    function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data) external returns (bytes4);
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4);
 }
 
 
-/**
- * @dev Implementation of the {IERC165} interface.
- *
- * Contracts that want to implement ERC165 should inherit from this contract and override {supportsInterface} to check
- * for the additional interface id that will be supported. For example:
- *
- * ```solidity
- * function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
- *     return interfaceId == type(MyInterface).interfaceId || super.supportsInterface(interfaceId);
- * }
- * ```
- *
- * Alternatively, {ERC165Storage} provides an easier to use but more expensive implementation.
- */
-abstract contract ERC165 is IERC165 {
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     */
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(IERC165).interfaceId;
-    }
-}
-
-// File: contracts\utils\EnumerableMap.sol
-
-/**
- * @dev Library for managing an enumerable variant of Solidity's
- * https://solidity.readthedocs.io/en/latest/types.html#mapping-types[`mapping`]
- * type.
- *
- * Maps have the following properties:
- *
- * - Entries are added, removed, and checked for existence in constant time
- * (O(1)).
- * - Entries are enumerated in O(n). No guarantees are made on the ordering.
- *
- * ```
- * contract Example {
- *     // Add the library methods
- *     using EnumerableMap for EnumerableMap.UintToAddressMap;
- *
- *     // Declare a set state variable
- *     EnumerableMap.UintToAddressMap private myMap;
- * }
- * ```
- *
- * As of v3.0.0, only maps of type `uint256 -> address` (`UintToAddressMap`) are
- * supported.
- */
-
-library EnumerableMap {
-    using EnumerableSet for EnumerableSet.Bytes32Set;
-
-    // To implement this library for multiple types with as little code
-    // repetition as possible, we write it in terms of a generic Map type with
-    // bytes32 keys and values.
-    // The Map implementation uses private functions, and user-facing
-    // implementations (such as Uint256ToAddressMap) are just wrappers around
-    // the underlying Map.
-    // This means that we can only create new EnumerableMaps for types that fit
-    // in bytes32.
-
-    struct Map {
-        // Storage of keys
-        EnumerableSet.Bytes32Set _keys;
-        mapping(bytes32 => bytes32) _values;
-    }
-
-    /**
-     * @dev Adds a key-value pair to a map, or updates the value for an existing
-     * key. O(1).
-     *
-     * Returns true if the key was added to the map, that is if it was not
-     * already present.
-     */
-    function _set(
-        Map storage map,
-        bytes32 key,
-        bytes32 value
-    ) private returns (bool) {
-        map._values[key] = value;
-        return map._keys.add(key);
-    }
-
-    /**
-     * @dev Removes a key-value pair from a map. O(1).
-     *
-     * Returns true if the key was removed from the map, that is if it was present.
-     */
-    function _remove(Map storage map, bytes32 key) private returns (bool) {
-        delete map._values[key];
-        return map._keys.remove(key);
-    }
-
-    /**
-     * @dev Returns true if the key is in the map. O(1).
-     */
-    function _contains(Map storage map, bytes32 key) private view returns (bool) {
-        return map._keys.contains(key);
-    }
-
-    /**
-     * @dev Returns the number of key-value pairs in the map. O(1).
-     */
-    function _length(Map storage map) private view returns (uint256) {
-        return map._keys.length();
-    }
-
-    /**
-     * @dev Returns the key-value pair stored at position `index` in the map. O(1).
-     *
-     * Note that there are no guarantees on the ordering of entries inside the
-     * array, and it may change when more entries are added or removed.
-     *
-     * Requirements:
-     *
-     * - `index` must be strictly less than {length}.
-     */
-    function _at(Map storage map, uint256 index) private view returns (bytes32, bytes32) {
-        bytes32 key = map._keys.at(index);
-        return (key, map._values[key]);
-    }
-
-    /**
-     * @dev Tries to returns the value associated with `key`.  O(1).
-     * Does not revert if `key` is not in the map.
-     */
-    function _tryGet(Map storage map, bytes32 key) private view returns (bool, bytes32) {
-        bytes32 value = map._values[key];
-        if (value == bytes32(0)) {
-            return (_contains(map, key), bytes32(0));
-        } else {
-            return (true, value);
-        }
-    }
-
-    /**
-     * @dev Returns the value associated with `key`.  O(1).
-     *
-     * Requirements:
-     *
-     * - `key` must be in the map.
-     */
-    function _get(Map storage map, bytes32 key) private view returns (bytes32) {
-        bytes32 value = map._values[key];
-        require(value != 0 || _contains(map, key), "EnumerableMap: nonexistent key");
-        return value;
-    }
-
-    /**
-     * @dev Same as {_get}, with a custom error message when `key` is not in the map.
-     *
-     * CAUTION: This function is deprecated because it requires allocating memory for the error
-     * message unnecessarily. For custom revert reasons use {_tryGet}.
-     */
-    function _get(
-        Map storage map,
-        bytes32 key,
-        string memory errorMessage
-    ) private view returns (bytes32) {
-        bytes32 value = map._values[key];
-        require(value != 0 || _contains(map, key), errorMessage);
-        return value;
-    }
-
-    // UintToAddressMap
-
-    struct UintToAddressMap {
-        Map _inner;
-    }
-
-    /**
-     * @dev Adds a key-value pair to a map, or updates the value for an existing
-     * key. O(1).
-     *
-     * Returns true if the key was added to the map, that is if it was not
-     * already present.
-     */
-    function set(
-        UintToAddressMap storage map,
-        uint256 key,
-        address value
-    ) internal returns (bool) {
-        return _set(map._inner, bytes32(key), bytes32(uint256(uint160(value))));
-    }
-
-    /**
-     * @dev Removes a value from a set. O(1).
-     *
-     * Returns true if the key was removed from the map, that is if it was present.
-     */
-    function remove(UintToAddressMap storage map, uint256 key) internal returns (bool) {
-        return _remove(map._inner, bytes32(key));
-    }
-
-    /**
-     * @dev Returns true if the key is in the map. O(1).
-     */
-    function contains(UintToAddressMap storage map, uint256 key) internal view returns (bool) {
-        return _contains(map._inner, bytes32(key));
-    }
-
-    /**
-     * @dev Returns the number of elements in the map. O(1).
-     */
-    function length(UintToAddressMap storage map) internal view returns (uint256) {
-        return _length(map._inner);
-    }
-
-    /**
-     * @dev Returns the element stored at position `index` in the set. O(1).
-     * Note that there are no guarantees on the ordering of values inside the
-     * array, and it may change when more values are added or removed.
-     *
-     * Requirements:
-     *
-     * - `index` must be strictly less than {length}.
-     */
-    function at(UintToAddressMap storage map, uint256 index) internal view returns (uint256, address) {
-        (bytes32 key, bytes32 value) = _at(map._inner, index);
-        return (uint256(key), address(uint160(uint256(value))));
-    }
-
-    /**
-     * @dev Tries to returns the value associated with `key`.  O(1).
-     * Does not revert if `key` is not in the map.
-     *
-     * _Available since v3.4._
-     */
-    function tryGet(UintToAddressMap storage map, uint256 key) internal view returns (bool, address) {
-        (bool success, bytes32 value) = _tryGet(map._inner, bytes32(key));
-        return (success, address(uint160(uint256(value))));
-    }
-
-    /**
-     * @dev Returns the value associated with `key`.  O(1).
-     *
-     * Requirements:
-     *
-     * - `key` must be in the map.
-     */
-    function get(UintToAddressMap storage map, uint256 key) internal view returns (address) {
-        return address(uint160(uint256(_get(map._inner, bytes32(key)))));
-    }
-
-    /**
-     * @dev Same as {get}, with a custom error message when `key` is not in the map.
-     *
-     * CAUTION: This function is deprecated because it requires allocating memory for the error
-     * message unnecessarily. For custom revert reasons use {tryGet}.
-     */
-    function get(
-        UintToAddressMap storage map,
-        uint256 key,
-        string memory errorMessage
-    ) internal view returns (address) {
-        return address(uint160(uint256(_get(map._inner, bytes32(key), errorMessage))));
-    }
-
-    // AddressToUintMap
-
-    struct AddressToUintMap {
-        Map _inner;
-    }
-
-    /**
-     * @dev Adds a key-value pair to a map, or updates the value for an existing
-     * key. O(1).
-     *
-     * Returns true if the key was added to the map, that is if it was not
-     * already present.
-     */
-    function set(
-        AddressToUintMap storage map,
-        address key,
-        uint256 value
-    ) internal returns (bool) {
-        return _set(map._inner, bytes32(uint256(uint160(key))), bytes32(value));
-    }
-
-    /**
-     * @dev Removes a value from a set. O(1).
-     *
-     * Returns true if the key was removed from the map, that is if it was present.
-     */
-    function remove(AddressToUintMap storage map, address key) internal returns (bool) {
-        return _remove(map._inner, bytes32(uint256(uint160(key))));
-    }
-
-    /**
-     * @dev Returns true if the key is in the map. O(1).
-     */
-    function contains(AddressToUintMap storage map, address key) internal view returns (bool) {
-        return _contains(map._inner, bytes32(uint256(uint160(key))));
-    }
-
-    /**
-     * @dev Returns the number of elements in the map. O(1).
-     */
-    function length(AddressToUintMap storage map) internal view returns (uint256) {
-        return _length(map._inner);
-    }
-
-    /**
-     * @dev Returns the element stored at position `index` in the set. O(1).
-     * Note that there are no guarantees on the ordering of values inside the
-     * array, and it may change when more values are added or removed.
-     *
-     * Requirements:
-     *
-     * - `index` must be strictly less than {length}.
-     */
-    function at(AddressToUintMap storage map, uint256 index) internal view returns (address, uint256) {
-        (bytes32 key, bytes32 value) = _at(map._inner, index);
-        return (address(uint160(uint256(key))), uint256(value));
-    }
-
-    /**
-     * @dev Tries to returns the value associated with `key`.  O(1).
-     * Does not revert if `key` is not in the map.
-     *
-     * _Available since v3.4._
-     */
-    function tryGet(AddressToUintMap storage map, address key) internal view returns (bool, uint256) {
-        (bool success, bytes32 value) = _tryGet(map._inner, bytes32(uint256(uint160(key))));
-        return (success, uint256(value));
-    }
-
-    /**
-     * @dev Returns the value associated with `key`.  O(1).
-     *
-     * Requirements:
-     *
-     * - `key` must be in the map.
-     */
-    function get(AddressToUintMap storage map, address key) internal view returns (uint256) {
-        return uint256(_get(map._inner, bytes32(uint256(uint160(key)))));
-    }
-}
-
-// File: contracts\utils\Strings.sol
+// File contracts/dependencies/Strings.sol
 
 /**
  * @dev String operations.
  */
 library Strings {
+    bytes16 private constant _HEX_SYMBOLS = "0123456789abcdef";
+
     /**
-     * @dev Converts a `uint256` to its ASCII `string` representation.
+     * @dev Converts a `uint256` to its ASCII `string` decimal representation.
      */
     function toString(uint256 value) internal pure returns (string memory) {
         // Inspired by OraclizeAPI's implementation - MIT licence
@@ -1524,9 +1084,41 @@ library Strings {
         }
         return string(buffer);
     }
+
+    /**
+     * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation.
+     */
+    function toHexString(uint256 value) internal pure returns (string memory) {
+        if (value == 0) {
+            return "0x00";
+        }
+        uint256 temp = value;
+        uint256 length = 0;
+        while (temp != 0) {
+            length++;
+            temp >>= 8;
+        }
+        return toHexString(value, length);
+    }
+
+    /**
+     * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation with fixed length.
+     */
+    function toHexString(uint256 value, uint256 length) internal pure returns (string memory) {
+        bytes memory buffer = new bytes(2 * length + 2);
+        buffer[0] = "0";
+        buffer[1] = "x";
+        for (uint256 i = 2 * length + 1; i > 1; --i) {
+            buffer[i] = _HEX_SYMBOLS[value & 0xf];
+            value >>= 4;
+        }
+        require(value == 0, "Strings: hex length insufficient");
+        return string(buffer);
+    }
 }
 
 
+// File contracts/dependencies/ERC721A.sol
 
 error ApprovalCallerNotOwnerNorApproved();
 error ApprovalQueryForNonexistentToken();
@@ -2160,26 +1752,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     ) internal virtual {}
 }
 
-// File: contracts\token\ERC721\ERC721Burnable.sol
 
-/**
- * @title ERC721 Burnable Token
- * @dev ERC721 Token that can be irreversibly burned (destroyed).
- */
-abstract contract ERC721Burnable is Context, ERC721A {
-    /**
-     * @dev Burns `tokenId`. See {ERC721-_burn}.
-     *
-     * Requirements:
-     *
-     * - The caller must own `tokenId` or be an approved operator.
-     */
-    function burn(uint256 tokenId) public virtual {
-        _burn(tokenId);
-    }
-}
-
-// File: contracts\utils\Pausable.sol
+// File contracts/dependencies/Pausable.sol
 
 /**
  * @dev Contract module which allows children to implement an emergency stop
@@ -2266,7 +1840,8 @@ abstract contract Pausable is Context {
     }
 }
 
-// File: contracts\token\ERC721\ERC721Pausable.sol
+
+// File contracts/dependencies/ERC721Pausable.sol
 
 /**
  * @dev ERC721 token with pausable token transfers, minting and burning.
@@ -2294,7 +1869,19 @@ abstract contract ERC721Pausable is ERC721A, Pausable {
     }
 }
 
-// File: contracts\presets\NonFungibleToken.sol
+
+// File contracts/NonFungibleToken.sol
+
+// SPDX-License-Identifier: MIT
+
+
+pragma solidity 0.8.4;
+
+
+
+
+
+
 
 /**
  * @dev {ERC721} token, including:
