@@ -1311,7 +1311,7 @@ library Strings {
 }
 
 
-// File contracts/NFTokenGasFreeWhiteList.sol
+// File contracts/NFT_gas_free.sol
 
 // SPDX-License-Identifier: MIT
 
@@ -1336,7 +1336,7 @@ pragma solidity 0.8.4;
  * roles, as well as the default admin role, which will let it grant both minter
  * and pauser roles to other accounts.
  */
-contract NFTokenGasFreeWhiteList is ERC1155, Ownable {
+contract NFT_gas_free is ERC1155, Ownable {
 
     // string public constant name = "Moody Ape Club";
     // string public constant symbol = "MAC";
