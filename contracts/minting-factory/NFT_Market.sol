@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.4;
 
-import "./dependencies/Ownable.sol";
-import "./dependencies/Address.sol";
-import "./dependencies/SafeMath.sol";
-import "./dependencies/EnumerableSet.sol";
-import "./dependencies/IERC20.sol";
+import "../dependencies/Ownable.sol";
+import "../dependencies/Address.sol";
+import "../dependencies/SafeMath.sol";
+import "../dependencies/EnumerableSet.sol";
+import "../dependencies/IERC20.sol";
 
 // Modern ERC721 Token interface
 interface IERC721 {

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-import "./dependencies/ERC20.sol";
+import "../dependencies/ERC20.sol";
 
-import "./dependencies/IERC721Receiver.sol";
-import "./dependencies/SafeMath.sol";
+import "../dependencies/IERC721Receiver.sol";
+import "../dependencies/SafeMath.sol";
 
 contract NFTCollection {
 

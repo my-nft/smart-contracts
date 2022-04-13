@@ -3,10 +3,10 @@
 
 pragma solidity 0.8.4;
 
-import "./dependencies/ERC1155.sol";
-import "./dependencies/Ownable.sol";
-import "./dependencies/SafeMath.sol";
-import "./dependencies/Strings.sol";
+import "../dependencies/ERC1155.sol";
+import "../dependencies/Ownable.sol";
+import "../dependencies/SafeMath.sol";
+import "../dependencies/Strings.sol";
 /**
  * @dev {ERC721} token, including:
  *
