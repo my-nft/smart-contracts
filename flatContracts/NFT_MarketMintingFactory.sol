@@ -99,33 +99,24 @@ abstract contract Ownable is Context {
  */
 library Address {
     /**
-     * @dev Returns true if `account` is a contract.
-     *
-     * [IMPORTANT]
-     * ====
-     * It is unsafe to assume that an address for which this function returns
-     * false is an externally-owned account (EOA) and not a contract.
-     *
-     * Among others, `isContract` will return false for the following
-     * types of addresses:
-     *
-     *  - an externally-owned account
-     *  - a contract in construction
-     *  - an address where a contract will be created
-     *  - an address where a contract lived, but was destroyed
-     * ====
-     */
-    function isContract(address account) internal view returns (bool) {
-        // This method relies on extcodesize, which returns 0 for contracts in
-        // construction, since the code is only stored at the end of the
-        // constructor execution.
+   * @dev Returns whether the target address is a contract.
+   * @param _addr Address to check.
+   * @return addressCheck True if _addr is a contract, false if not.
+   */
+  function isContract(address _addr) internal view returns (bool addressCheck)
+  {
+    // This method relies in extcodesize, which returns 0 for contracts in
+    // construction, since the code is only stored at the end of the
+    // constructor execution.
 
-        uint256 size;
-        assembly {
-            size := extcodesize(account)
-        }
-        return size > 0;
-    }
+    // According to EIP-1052, 0x0 is the value returned for not-yet created accounts
+    // and 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470 is returned
+    // for accounts without code, i.e. `keccak256('')`
+    bytes32 codehash;
+    bytes32 accountHash = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
+    assembly { codehash := extcodehash(_addr) } // solhint-disable-line
+    addressCheck = (codehash != 0x0 && codehash != accountHash);
+  }
 
     /**
      * @dev Replacement for Solidity's `transfer`: sends `amount` wei to
@@ -825,14 +816,88 @@ library EnumerableSet {
 
 // File contracts/dependencies/IERC20.sol
 
-// Modern ERC20 Token interface
+// OpenZeppelin Contracts (last updated v4.5.0) (token/ERC20/IERC20.sol)
+
+/**
+ * @dev Interface of the ERC20 standard as defined in the EIP.
+ */
 interface IERC20 {
-    function transfer(address to, uint amount) external returns (bool);
-    function transferFrom(address from, address to, uint amount) external returns (bool);
+    /**
+     * @dev Emitted when `value` tokens are moved from one account (`from`) to
+     * another (`to`).
+     *
+     * Note that `value` may be zero.
+     */
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    /**
+     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
+     * a call to {approve}. `value` is the new allowance.
+     */
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+
+    /**
+     * @dev Returns the amount of tokens in existence.
+     */
+    function totalSupply() external view returns (uint256);
+
+    /**
+     * @dev Returns the amount of tokens owned by `account`.
+     */
+    function balanceOf(address account) external view returns (uint256);
+
+    /**
+     * @dev Moves `amount` tokens from the caller's account to `to`.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transfer(address to, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Returns the remaining number of tokens that `spender` will be
+     * allowed to spend on behalf of `owner` through {transferFrom}. This is
+     * zero by default.
+     *
+     * This value changes when {approve} or {transferFrom} are called.
+     */
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    /**
+     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * IMPORTANT: Beware that changing an allowance with this method brings the risk
+     * that someone may use both the old and the new allowance by unfortunate
+     * transaction ordering. One possible solution to mitigate this race
+     * condition is to first reduce the spender's allowance to 0 and set the
+     * desired value afterwards:
+     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     *
+     * Emits an {Approval} event.
+     */
+    function approve(address spender, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Moves `amount` tokens from `from` to `to` using the
+     * allowance mechanism. `amount` is then deducted from the caller's
+     * allowance.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) external returns (bool);
 }
 
 
-// File contracts/NFT_Market.sol
+// File contracts/minting-factory/NFT_Market.sol
 
 // SPDX-License-Identifier: MIT
 
@@ -859,6 +924,9 @@ contract NFT_Market is Ownable {
     uint private _maxToMint;
     uint private _mintFee;
     uint private _maxPerTransaction;
+    bool public whitelistingEnabled = false;
+
+    bytes32 public root;
 
     address public admin = 0x72DDbDc341BBFc00Fe4F3f49695532841965bF0E;
 
@@ -898,8 +966,21 @@ contract NFT_Market is Ownable {
 
     function setMaxPerTransaction(uint _max) public  {
         require (_msgSender() == admin || _msgSender() == owner(), "Only admin or owner");
-
+        
         _maxPerTransaction = _max;
+    }
+
+    function toggleWhitelisting(bool _toggle) public virtual {
+        require (_msgSender() == admin || _msgSender() == owner(), "Only admin or owner");
+        whitelistingEnabled = _toggle;
+    }
+
+     /*
+     * Function to set the merkle root
+    */
+    function setRoot(bytes32 _root) public {
+        require (_msgSender() == admin || _msgSender() == owner(), "Only admin or owner");
+        root = _root;
     }
 
 
@@ -919,10 +1000,11 @@ contract NFT_Market is Ownable {
       uint256 totalMinted = IERC721(getTrustedNftAddress()).totalSupply();
       return totalMinted.add(count) < maxFree;
     }
-    
-    function mint(uint256 count) external payable {
+
+    function mint(uint256 count,  bytes32 leaf, bytes32[] memory _proof, uint256[] memory positions) payable public {
         // owner can mint without fee
         // other users need to pay a fixed fee in token
+        require(verify(_proof, leaf, positions) || ! whitelistingEnabled, "Not whitelisted");
         uint256 totalMinted = IERC721(getTrustedNftAddress()).totalSupply();
         require (count < getMaxPerTransaction(), "Max to mint reached");
         require (totalMinted.add(count) <= getMaxToMint(), "Max supply reached");
@@ -935,7 +1017,24 @@ contract NFT_Market is Ownable {
             totalSales = totalSales.add(msg.value);
         }
         IERC721(getTrustedNftAddress()).mint(_msgSender(), count);
+    }
+    /*
+     * Function to verify the proof
+    */
+    function verify(bytes32[] memory proof, bytes32 leaf, uint256[] memory positions) public view returns (bool) {
 
+        bytes32 computedHash = leaf;
+
+        for (uint256 i = 0; i < proof.length; i++) {
+            bytes32 proofElement = proof[i];
+
+            if (positions[i] == 1) {
+                computedHash = sha256(abi.encodePacked(computedHash, proofElement));
+            } else {
+                computedHash = sha256(abi.encodePacked(proofElement, computedHash));
+            }
+        }
+        return computedHash == root;
     }
 
     event ERC721Received(address operator, address from, uint256 tokenId, bytes data);

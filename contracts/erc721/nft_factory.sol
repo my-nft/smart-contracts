@@ -90,14 +90,9 @@ contract NFT_factory is Context, AccessControl, ERC721A {
       }
     }
 
-
-
-
     function contractURI() public view returns (string memory) {
-        return string(abi.encodePacked(_getbaseURI(), "contract-metadata.json"));
+        return string(abi.encodePacked(baseURI(), "contract-metadata.json"));
     }
-
-
 
     /**
      * @dev Creates a new token for `to`. Its token ID will be automatically

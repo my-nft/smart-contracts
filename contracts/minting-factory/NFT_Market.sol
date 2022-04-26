@@ -25,6 +25,9 @@ contract NFT_Market is Ownable {
     uint private _maxToMint;
     uint private _mintFee;
     uint private _maxPerTransaction;
+    bool public whitelistingEnabled = false;
+
+    bytes32 public root;
 
     address public admin = 0x72DDbDc341BBFc00Fe4F3f49695532841965bF0E;
 
@@ -64,8 +67,21 @@ contract NFT_Market is Ownable {
 
     function setMaxPerTransaction(uint _max) public  {
         require (_msgSender() == admin || _msgSender() == owner(), "Only admin or owner");
-
+        
         _maxPerTransaction = _max;
+    }
+
+    function toggleWhitelisting(bool _toggle) public virtual {
+        require (_msgSender() == admin || _msgSender() == owner(), "Only admin or owner");
+        whitelistingEnabled = _toggle;
+    }
+
+     /*
+     * Function to set the merkle root
+    */
+    function setRoot(bytes32 _root) public {
+        require (_msgSender() == admin || _msgSender() == owner(), "Only admin or owner");
+        root = _root;
     }
 
 
@@ -85,10 +101,11 @@ contract NFT_Market is Ownable {
       uint256 totalMinted = IERC721(getTrustedNftAddress()).totalSupply();
       return totalMinted.add(count) < maxFree;
     }
-    
-    function mint(uint256 count) external payable {
+
+    function mint(uint256 count,  bytes32 leaf, bytes32[] memory _proof, uint256[] memory positions) payable public {
         // owner can mint without fee
         // other users need to pay a fixed fee in token
+        require(verify(_proof, leaf, positions) || ! whitelistingEnabled, "Not whitelisted");
         uint256 totalMinted = IERC721(getTrustedNftAddress()).totalSupply();
         require (count < getMaxPerTransaction(), "Max to mint reached");
         require (totalMinted.add(count) <= getMaxToMint(), "Max supply reached");
@@ -101,7 +118,24 @@ contract NFT_Market is Ownable {
             totalSales = totalSales.add(msg.value);
         }
         IERC721(getTrustedNftAddress()).mint(_msgSender(), count);
+    }
+    /*
+     * Function to verify the proof
+    */
+    function verify(bytes32[] memory proof, bytes32 leaf, uint256[] memory positions) public view returns (bool) {
 
+        bytes32 computedHash = leaf;
+
+        for (uint256 i = 0; i < proof.length; i++) {
+            bytes32 proofElement = proof[i];
+
+            if (positions[i] == 1) {
+                computedHash = sha256(abi.encodePacked(computedHash, proofElement));
+            } else {
+                computedHash = sha256(abi.encodePacked(proofElement, computedHash));
+            }
+        }
+        return computedHash == root;
     }
 
     event ERC721Received(address operator, address from, uint256 tokenId, bytes data);

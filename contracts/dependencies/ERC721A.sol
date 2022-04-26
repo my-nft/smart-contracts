@@ -89,7 +89,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     * automatically added as a prefix in {tokenURI} to each token's URI, or
     * to the token ID if no specific URI is set for that token ID.
     */
-    function _getbaseURI() public view returns (string memory) {
+    function baseURI() public view returns (string memory) {
         return _baseURI;
     }
     // Mapping from token ID to ownership details
@@ -245,8 +245,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
 
-        string memory baseURI = _getbaseURI();
-        return bytes(baseURI).length != 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
+        string memory base_URI = baseURI();
+        return bytes(base_URI).length != 0 ? string(abi.encodePacked(base_URI, tokenId.toString())) : '';
     }
 
    

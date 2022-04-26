@@ -386,33 +386,24 @@ library EnumerableSet {
  */
 library Address {
     /**
-     * @dev Returns true if `account` is a contract.
-     *
-     * [IMPORTANT]
-     * ====
-     * It is unsafe to assume that an address for which this function returns
-     * false is an externally-owned account (EOA) and not a contract.
-     *
-     * Among others, `isContract` will return false for the following
-     * types of addresses:
-     *
-     *  - an externally-owned account
-     *  - a contract in construction
-     *  - an address where a contract will be created
-     *  - an address where a contract lived, but was destroyed
-     * ====
-     */
-    function isContract(address account) internal view returns (bool) {
-        // This method relies on extcodesize, which returns 0 for contracts in
-        // construction, since the code is only stored at the end of the
-        // constructor execution.
+   * @dev Returns whether the target address is a contract.
+   * @param _addr Address to check.
+   * @return addressCheck True if _addr is a contract, false if not.
+   */
+  function isContract(address _addr) internal view returns (bool addressCheck)
+  {
+    // This method relies in extcodesize, which returns 0 for contracts in
+    // construction, since the code is only stored at the end of the
+    // constructor execution.
 
-        uint256 size;
-        assembly {
-            size := extcodesize(account)
-        }
-        return size > 0;
-    }
+    // According to EIP-1052, 0x0 is the value returned for not-yet created accounts
+    // and 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470 is returned
+    // for accounts without code, i.e. `keccak256('')`
+    bytes32 codehash;
+    bytes32 accountHash = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
+    assembly { codehash := extcodehash(_addr) } // solhint-disable-line
+    addressCheck = (codehash != 0x0 && codehash != accountHash);
+  }
 
     /**
      * @dev Replacement for Solidity's `transfer`: sends `amount` wei to
@@ -842,23 +833,49 @@ interface IERC165 {
 /**
  * @dev Implementation of the {IERC165} interface.
  *
- * Contracts that want to implement ERC165 should inherit from this contract and override {supportsInterface} to check
- * for the additional interface id that will be supported. For example:
- *
- * ```solidity
- * function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
- *     return interfaceId == type(MyInterface).interfaceId || super.supportsInterface(interfaceId);
- * }
- * ```
- *
- * Alternatively, {ERC165Storage} provides an easier to use but more expensive implementation.
+ * Contracts may inherit from this and call {_registerInterface} to declare
+ * their support of an interface.
  */
-abstract contract ERC165 is IERC165 {
+contract ERC165 is IERC165 {
+    /*
+     * bytes4(keccak256('supportsInterface(bytes4)')) == 0x01ffc9a7
+     */
+    bytes4 private constant _INTERFACE_ID_ERC165 = 0x01ffc9a7;
+
+    /**
+     * @dev Mapping of interface ids to whether or not it's supported.
+     */
+    mapping(bytes4 => bool) private _supportedInterfaces;
+
+    constructor ()  {
+        // Derived contracts need only register support for their own interfaces,
+        // we register support for ERC165 itself here
+        _registerInterface(_INTERFACE_ID_ERC165);
+    }
+
     /**
      * @dev See {IERC165-supportsInterface}.
+     *
+     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(IERC165).interfaceId;
+        return _supportedInterfaces[interfaceId];
+    }
+
+    /**
+     * @dev Registers the contract as an implementer of the interface defined by
+     * `interfaceId`. Support of the actual ERC165 interface is automatic and
+     * registering its interface id is not required.
+     *
+     * See {IERC165-supportsInterface}.
+     *
+     * Requirements:
+     *
+     * - `interfaceId` cannot be the ERC165 invalid interface (`0xffffffff`).
+     */
+    function _registerInterface(bytes4 interfaceId) internal virtual {
+        require(interfaceId != 0xffffffff, "ERC165: invalid interface id");
+        _supportedInterfaces[interfaceId] = true;
     }
 }
 
@@ -1200,7 +1217,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     * automatically added as a prefix in {tokenURI} to each token's URI, or
     * to the token ID if no specific URI is set for that token ID.
     */
-    function _getbaseURI() public view returns (string memory) {
+    function baseURI() public view returns (string memory) {
         return _baseURI;
     }
     // Mapping from token ID to ownership details
@@ -1356,8 +1373,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
 
-        string memory baseURI = _getbaseURI();
-        return bytes(baseURI).length != 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
+        string memory base_URI = baseURI();
+        return bytes(base_URI).length != 0 ? string(abi.encodePacked(base_URI, tokenId.toString())) : '';
     }
 
    
@@ -1870,11 +1887,168 @@ abstract contract ERC721Pausable is ERC721A, Pausable {
 }
 
 
-// File contracts/NonFungibleToken.sol
+// File contracts/dependencies/SafeMath.sol
+
+/**
+ * @dev Wrappers over Solidity's arithmetic operations with added overflow
+ * checks.
+ *
+ * Arithmetic operations in Solidity wrap on overflow. This can easily result
+ * in bugs, because programmers usually assume that an overflow raises an
+ * error, which is the standard behavior in high level programming languages.
+ * `SafeMath` restores this intuition by reverting the transaction when an
+ * operation overflows.
+ *
+ * Using this library instead of the unchecked operations eliminates an entire
+ * class of bugs, so it's recommended to use it always.
+ */
+library SafeMath {
+    /**
+     * @dev Returns the addition of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `+` operator.
+     *
+     * Requirements:
+     *
+     * - Addition cannot overflow.
+     */
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        require(c >= a, "SafeMath: addition overflow");
+
+        return c;
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting on
+     * overflow (when the result is negative).
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     *
+     * - Subtraction cannot overflow.
+     */
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        return sub(a, b, "SafeMath: subtraction overflow");
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting with custom message on
+     * overflow (when the result is negative).
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     *
+     * - Subtraction cannot overflow.
+     */
+    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b <= a, errorMessage);
+        uint256 c = a - b;
+
+        return c;
+    }
+
+    /**
+     * @dev Returns the multiplication of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `*` operator.
+     *
+     * Requirements:
+     *
+     * - Multiplication cannot overflow.
+     */
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+        // benefit is lost if 'b' is also tested.
+        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+        if (a == 0) {
+            return 0;
+        }
+
+        uint256 c = a * b;
+        require(c / a == b, "SafeMath: multiplication overflow");
+
+        return c;
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers. Reverts on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        return div(a, b, "SafeMath: division by zero");
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers. Reverts with custom message on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b > 0, errorMessage);
+        uint256 c = a / b;
+        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+
+        return c;
+    }
+
+    /**
+     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
+     * Reverts when dividing by zero.
+     *
+     * Counterpart to Solidity's `%` operator. This function uses a `revert`
+     * opcode (which leaves remaining gas untouched) while Solidity uses an
+     * invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+        return mod(a, b, "SafeMath: modulo by zero");
+    }
+
+    /**
+     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
+     * Reverts with custom message when dividing by zero.
+     *
+     * Counterpart to Solidity's `%` operator. This function uses a `revert`
+     * opcode (which leaves remaining gas untouched) while Solidity uses an
+     * invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b != 0, errorMessage);
+        return a % b;
+    }
+}
+
+
+// File contracts/erc721/nft.sol
 
 // SPDX-License-Identifier: MIT
-
-
 pragma solidity 0.8.4;
 
 
@@ -1898,14 +2072,27 @@ pragma solidity 0.8.4;
  * roles, as well as the default admin role, which will let it grant both minter
  * and pauser roles to other accounts.
  */
+
 contract NonFungibleToken is Context, AccessControl, ERC721A, ERC721Pausable {
+
+    using SafeMath for uint256;
+    using Address for address;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     address public owner;
+    address payable public admin = payable(0xFdf9851EE0F375F513098Da24b9F60629EC57624);
+    uint256 public fee = 1e17;
+
     bool public whitelistingEnabled = false;
     bool public mintingEnabled = false;
-    uint256 public maxPerWallet = 100;
+    bool public freezeMetadata = false;
+
+    uint256 private _maxPerWallet = 100;
+    uint256 public numberOfWhitelisted;
+
+
+    uint256 private _revealsCount = 0;
 
     /**
      * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
@@ -1914,36 +2101,48 @@ contract NonFungibleToken is Context, AccessControl, ERC721A, ERC721Pausable {
      * Token URIs will be autogenerated based on `baseURI` and their token IDs.
      * See {ERC721-tokenURI}.
      */
-    constructor(string memory name, string memory symbol, string memory baseURI) public ERC721A(name, symbol) {
+    constructor(string memory name, string memory symbol, string memory _baseURI, uint256 maxPerWallet) public ERC721A(name, symbol) payable {
+        require(msg.value >= fee, "NonFungibleToken: must pay required fees");
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
 
         _setupRole(MINTER_ROLE, _msgSender());
-       _setupRole(PAUSER_ROLE, _msgSender());
+        _setupRole(PAUSER_ROLE, _msgSender());
 
-        _setBaseURI(baseURI);
-
+        _setBaseURI(_baseURI);
+        _maxPerWallet = maxPerWallet;
         owner = msg.sender;
     }
 
 
+    function getMaxPerWallet() public view returns (uint256) {
+        return _maxPerWallet;
+    }
 
-    function setURI(string memory baseURI) public virtual {
+    function setMaxPerWallet(uint256 maxPerWallet) public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have DEFAULT_ADMIN_ROLE");
+        _maxPerWallet = maxPerWallet;
+    }
+
+    function setFreezeMetadata() public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have DEFAULT_ADMIN_ROLE");
+        require(! freezeMetadata, "NonFungibleToken: already frozen !");
+
+        freezeMetadata = true;
+    }
+
+    function setURI(string memory _baseURI) public virtual {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
-        _setBaseURI(baseURI);
-
+        require(! freezeMetadata, "Metadata frozen !");
+        require((_revealsCount < 2), "You cannot make more than three reveals");
+        _setBaseURI(_baseURI);
+        _revealsCount +=1;
     }
-
-    function setMaxPerWallet(uint256 _maxPerWallet) public virtual {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have minter role to mint");
-        maxPerWallet = _maxPerWallet;
-
-    }
-
-
+    
     function setOwner(address _owner) public virtual {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role to mint");
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
+        _setupRole(DEFAULT_ADMIN_ROLE, _owner);
+        _setupRole(MINTER_ROLE, _owner);
         owner = _owner;
-
     }
 
     function toggleMinting(bool _bool) public virtual {
@@ -1960,29 +2159,30 @@ contract NonFungibleToken is Context, AccessControl, ERC721A, ERC721Pausable {
 
 
 
-    function Whitelist(address[] memory _beneficiaries) external {
+    function whitelist(address[] memory _beneficiaries) external {
       require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
       for (uint256 i = 0; i < _beneficiaries.length; i++) {
+        if (! whitelists[_beneficiaries[i]]){
+            numberOfWhitelisted = numberOfWhitelisted + 1;
+        }
         whitelists[_beneficiaries[i]] = true;
       }
     }
 
-    function bulkMint(address[] memory _beneficiaries) external {
+    function removeFromWhitelist(address[] memory _beneficiaries) external {
       require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
       for (uint256 i = 0; i < _beneficiaries.length; i++) {
 
-        _safeMint(_beneficiaries[i], 1);
+        if (whitelists[_beneficiaries[i]]){
+            numberOfWhitelisted = numberOfWhitelisted.sub(1);
+        }
+        whitelists[_beneficiaries[i]] = false;
       }
-    }
-
-
-
+    }  
 
     function contractURI() public view returns (string memory) {
-        return string(abi.encodePacked(_getbaseURI(), "contract-metadata.json"));
+        return string(abi.encodePacked(baseURI(), "contract-metadata.json"));
     }
-
-
 
     /**
      * @dev Creates a new token for `to`. Its token ID will be automatically
@@ -2003,7 +2203,7 @@ contract NonFungibleToken is Context, AccessControl, ERC721A, ERC721Pausable {
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
         _safeMint(to, 1);
-        require(balanceOf(to) <= maxPerWallet, "Max NFTs reached by wallet");
+        require(balanceOf(to) <= getMaxPerWallet(), "Max NFTs reached by wallet");
     }
     function mint(address to, uint256 quantity) public virtual {
         require(hasRole(MINTER_ROLE, _msgSender()), "NonFungibleToken: must have minter role to mint");
@@ -2013,7 +2213,13 @@ contract NonFungibleToken is Context, AccessControl, ERC721A, ERC721Pausable {
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
         _safeMint(to, quantity);
-        require(balanceOf(to) <= maxPerWallet, "Max NFTs reached by wallet");
+        require(balanceOf(to) <= getMaxPerWallet(), "Max NFTs reached by wallet");
+    }
+    function batchMint(address[] memory _beneficiaries) external {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
+        for (uint256 i = 0; i < _beneficiaries.length; i++) {       
+          mint(_beneficiaries[i]);                                  
+        }                                                           
     }
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721A, ERC721Pausable) {
         super._beforeTokenTransfer(from, to, tokenId);
