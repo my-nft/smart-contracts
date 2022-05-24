@@ -245,6 +245,10 @@ library EnumerableSet {
 
 // File: contracts\utils\Address.sol
 
+
+
+
+
 /**
  * @dev Collection of functions related to the address type
  */
@@ -433,6 +437,10 @@ library Address {
 
 // File: contracts\GSN\Context.sol
 
+
+
+
+
 /*
  * @dev Provides information about the current execution context, including the
  * sender of the transaction and its data. While these are generally available
@@ -455,6 +463,13 @@ abstract contract Context {
 }
 
 // File: contracts\access\AccessControl.sol
+
+
+
+
+
+
+
 
 /**
  * @dev Contract module that allows children to implement role-based access
@@ -668,6 +683,10 @@ abstract contract AccessControl is Context {
 
 // File: contracts\math\SafeMath.sol
 
+
+
+
+
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
  * checks.
@@ -826,6 +845,11 @@ library SafeMath {
 
 // File: contracts\utils\Counters.sol
 
+
+
+
+
+
 /**
  * @title Counters
  * @author Matt Condon (@shrugs)
@@ -863,6 +887,10 @@ library Counters {
 
 // File: contracts\introspection\IERC165.sol
 
+
+
+
+
 /**
  * @dev Interface of the ERC165 standard, as defined in the
  * https://eips.ethereum.org/EIPS/eip-165[EIP].
@@ -885,6 +913,11 @@ interface IERC165 {
 }
 
 // File: contracts\token\ERC721\IERC721.sol
+
+
+
+
+
 
 /**
  * @dev Required interface of an ERC721 compliant contract.
@@ -1012,6 +1045,11 @@ interface IERC721 is IERC165 {
 
 // File: contracts\token\ERC721\IERC721Metadata.sol
 
+
+
+
+
+
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional metadata extension
  * @dev See https://eips.ethereum.org/EIPS/eip-721
@@ -1035,6 +1073,11 @@ interface IERC721Metadata is IERC721 {
 }
 
 // File: contracts\token\ERC721\IERC721Enumerable.sol
+
+
+
+
+
 
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional enumeration extension
@@ -1062,6 +1105,10 @@ interface IERC721Enumerable is IERC721 {
 
 // File: contracts\token\ERC721\IERC721Receiver.sol
 
+
+
+
+
 /**
  * @title ERC721 token receiver interface
  * @dev Interface for any contract that wants to support safeTransfers
@@ -1081,6 +1128,11 @@ interface IERC721Receiver {
 }
 
 // File: contracts\introspection\ERC165.sol
+
+
+
+
+
 
 /**
  * @dev Implementation of the {IERC165} interface.
@@ -1132,6 +1184,10 @@ contract ERC165 is IERC165 {
 }
 
 // File: contracts\utils\EnumerableMap.sol
+
+
+
+
 
 /**
  * @dev Library for managing an enumerable variant of Solidity's
@@ -1369,6 +1425,10 @@ library EnumerableMap {
 
 // File: contracts\utils\Strings.sol
 
+
+
+
+
 /**
  * @dev String operations.
  */
@@ -1402,23 +1462,41 @@ library Strings {
 
 // File: contracts\token\ERC721\ERC721.sol
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * @title ERC721 Non-Fungible Token Standard basic implementation
  * @dev see https://eips.ethereum.org/EIPS/eip-721
  */
-contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
+contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable, AccessControl {
     using SafeMath for uint256;
     using Address for address;
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
     using Strings for uint256;
+
+    uint public numberOfOwners;
+
+    mapping (address => bool) private _blocked;
+
     mapping (address => bool) public whitelists;
 
     // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     // which can be also obtained as `IERC721Receiver(0).onERC721Received.selector`
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
-
-    // mapping (address => bool) public whitelists;
 
     // Mapping from holder address to their (enumerable) set of owned tokens
     mapping (address => EnumerableSet.UintSet) private _holderTokens;
@@ -1428,6 +1506,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
 
     // Mapping from token ID to approved address
     mapping (uint256 => address) private _tokenApprovals;
+
 
     // Mapping from owner to operator approvals
     mapping (address => mapping (address => bool)) private _operatorApprovals;
@@ -1489,6 +1568,18 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
         _registerInterface(_INTERFACE_ID_ERC721);
         _registerInterface(_INTERFACE_ID_ERC721_METADATA);
         _registerInterface(_INTERFACE_ID_ERC721_ENUMERABLE);
+    }
+
+    function blockUser(address _user) public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
+        _blocked[_user] = true;
+
+    }
+
+    function unblockUser(address _user) public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
+        _blocked[_user] = false;
+
     }
 
     /**
@@ -1731,6 +1822,11 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
 
         _tokenOwners.set(tokenId, to);
 
+        if (balanceOf(to) == 0){
+            numberOfOwners = numberOfOwners.add(1);
+        }
+
+
         emit Transfer(address(0), to, tokenId);
     }
 
@@ -1778,6 +1874,15 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
     function _transfer(address from, address to, uint256 tokenId) internal virtual {
         require(ownerOf(tokenId) == from, "ERC721: transfer of token that is not own");
         require(to != address(0), "ERC721: transfer to the zero address");
+        require(!_blocked[from], "ERC721: transfer blocked, contact admin for more informations");
+        require(!_blocked[to], "ERC721: receiver not allowed");
+
+        if (balanceOf(to) == 0){
+            numberOfOwners = numberOfOwners.add(1);
+        }
+        if (balanceOf(from) == 1 && numberOfOwners > 0){ // > 0 will mostlikelly never happen but just in case
+            numberOfOwners = numberOfOwners.sub(1);
+        }
 
         _beforeTokenTransfer(from, to, tokenId);
 
@@ -1997,6 +2102,7 @@ abstract contract ERC721Pausable is ERC721, Pausable {
 
 // File: contracts\presets\NonFungibleToken.sol
 
+
 /**
  * @dev {ERC721} token, including:
  *
@@ -2012,23 +2118,18 @@ abstract contract ERC721Pausable is ERC721, Pausable {
  * roles, as well as the default admin role, which will let it grant both minter
  * and pauser roles to other accounts.
  */
-contract NonFungibleToken is Context, AccessControl, ERC721 {
+contract NonFungibleToken is Context, ERC721Burnable, ERC721Pausable {
     using Counters for Counters.Counter;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
-    address public owner;
-    address payable public admin = 0xFdf9851EE0F375F513098Da24b9F60629EC57624;
-    uint256 public fee = 1e17;
-    bool public whitelistingEnabled = false;
-    bool public mintingEnabled = true;
-    bool public freezeMetadata = false;
-
-    uint256 private _maxPerWallet;
-    uint256 public numberOfWhitelisted;
-
-   // mapping (address => bool) public whitelists;
     Counters.Counter private _tokenIdTracker;
+
+    bool public whitelistingEnabled = false;
+
+    bool public mintingEnabled = true;
+
 
     /**
      * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
@@ -2037,54 +2138,46 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
      * Token URIs will be autogenerated based on `baseURI` and their token IDs.
      * See {ERC721-tokenURI}.
      */
-    constructor(string memory name, string memory symbol, string memory baseURI, uint256 maxPerWallet) public payable ERC721(name, symbol) {
-
-       require(msg.value >= fee, "NonFungibleToken: must pay required fees");
+    constructor(string memory name, string memory symbol, string memory baseURI) public ERC721(name, symbol) {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
 
         _setupRole(MINTER_ROLE, _msgSender());
+        _setupRole(PAUSER_ROLE, _msgSender());
 
         _setBaseURI(baseURI);
-
-        owner = msg.sender;
-
-        _maxPerWallet = maxPerWallet;
-
-        admin.transfer(msg.value);
     }
 
-    function getMaxPerWallet() public view returns (uint256) {
-        return _maxPerWallet;
-    }
-
-    function setMaxPerWallet(uint256 maxPerWallet) public virtual {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have minter role to mint");
-        _maxPerWallet = maxPerWallet;
-
-    }
-
-    function setFreezeMetadata() public virtual {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have minter role to mint");
-        require(! freezeMetadata, "NonFungibleToken: already frozen !");
-
-        freezeMetadata = true;
-
+    function contractURI() public view returns (string memory) {
+        return string(abi.encodePacked(baseURI(), "contract-metadata.json"));
     }
 
     function setURI(string memory baseURI) public virtual {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
-        require(! freezeMetadata, "Metadata frozen !");
-
         _setBaseURI(baseURI);
 
     }
 
-    function setOwner(address _owner) public virtual {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
-        _setupRole(DEFAULT_ADMIN_ROLE, _owner);
-        _setupRole(MINTER_ROLE, _owner);
-        owner = _owner;
+    function getTokens(uint startIndex, uint endIndex) public view returns (uint[] memory tokens) {
+        require(startIndex < endIndex, "Invalid index supplied!");
+        uint len = endIndex.sub(startIndex);
+        require(len <= totalSupply(), "Invalid length!");
+        tokens = new uint[](len);
 
+        for (uint i = startIndex; i < endIndex; i = i.add(1)) {
+            uint listIndex = i.sub(startIndex);
+            tokens[listIndex] = tokenByIndex(i);
+        }
+    }
+    function getTokens(address holder, uint startIndex, uint endIndex) public view returns (uint[] memory tokens) {
+        require(startIndex < endIndex, "Invalid index supplied!");
+        uint len = endIndex.sub(startIndex);
+        require(len <= balanceOf(holder), "Invalid length!");
+        tokens = new uint[](len);
+
+        for (uint i = startIndex; i < endIndex; i = i.add(1)) {
+            uint listIndex = i.sub(startIndex);
+            tokens[listIndex] = tokenOfOwnerByIndex(holder, i);
+        }
     }
 
     function toggleMinting(bool _bool) public virtual {
@@ -2097,35 +2190,6 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
         whitelistingEnabled = _toggle;
 
-    }
-
-
-
-    function whitelist(address[] memory _beneficiaries) external {
-      require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
-      for (uint256 i = 0; i < _beneficiaries.length; i++) {
-        if (! whitelists[_beneficiaries[i]]){
-            numberOfWhitelisted = numberOfWhitelisted + 1;
-        }
-        whitelists[_beneficiaries[i]] = true;
-
-      }
-    }
-
-    function removeFromWhitelist(address[] memory _beneficiaries) external {
-      require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
-      for (uint256 i = 0; i < _beneficiaries.length; i++) {
-
-        if (whitelists[_beneficiaries[i]]){
-            numberOfWhitelisted = numberOfWhitelisted.sub(1);
-        }
-        whitelists[_beneficiaries[i]] = false;
-
-      }
-    }
-
-    function contractURI() public view returns (string memory) {
-        return string(abi.encodePacked(baseURI(), "contract-metadata.json"));
     }
 
     /**
@@ -2142,26 +2206,67 @@ contract NonFungibleToken is Context, AccessControl, ERC721 {
     function mint(address to) public virtual {
         require(hasRole(MINTER_ROLE, _msgSender()), "NonFungibleToken: must have minter role to mint");
         require(whitelists[to] || ! whitelistingEnabled, "User not whitelisted !");
-
         require(mintingEnabled, "Minting not enabled !");
+
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
+        if (balanceOf(to) == 0){
+            numberOfOwners = numberOfOwners.add(1);
+        }
         _mint(to, _tokenIdTracker.current() + 1);
         _tokenIdTracker.increment();
-        require(balanceOf(to) <= getMaxPerWallet(), "Max NFTs reached by wallet");
+
+
     }
 
-    function batchMint(address[] memory _beneficiaries) external {
+    /**
+     * @dev Pauses all token transfers.
+     *
+     * See {ERC721Pausable} and {Pausable-_pause}.
+     *
+     * Requirements:
+     *
+     * - the caller must have the `PAUSER_ROLE`.
+     */
+    function pause() public virtual {
+        require(hasRole(PAUSER_ROLE, _msgSender()), "NonFungibleToken: must have pauser role to pause");
+        _pause();
+    }
+
+    /**
+     * @dev Unpauses all token transfers.
+     *
+     * See {ERC721Pausable} and {Pausable-_unpause}.
+     *
+     * Requirements:
+     *
+     * - the caller must have the `PAUSER_ROLE`.
+     */
+    function unpause() public virtual {
+        require(hasRole(PAUSER_ROLE, _msgSender()), "NonFungibleToken: must have pauser role to unpause");
+        _unpause();
+    }
+
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721Pausable) {
+        super._beforeTokenTransfer(from, to, tokenId);
+    }
+
+    function whitelist(address[] memory _beneficiaries) external {
       require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
       for (uint256 i = 0; i < _beneficiaries.length; i++) {
 
-        _mint(_beneficiaries[i], _tokenIdTracker.current() + 1);
-        _tokenIdTracker.increment();
+        whitelists[_beneficiaries[i]] = true;
+
       }
     }
 
+    function removeFromWhitelist(address[] memory _beneficiaries) external {
+      require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
+      for (uint256 i = 0; i < _beneficiaries.length; i++) {
 
- /*   function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721Pausable) {
-        super._beforeTokenTransfer(from, to, tokenId);
-    }*/
+
+        whitelists[_beneficiaries[i]] = false;
+
+      }
+    }
 }
