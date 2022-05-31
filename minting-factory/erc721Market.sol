@@ -245,10 +245,6 @@ library EnumerableSet {
 
 // File: contracts\utils\Address.sol
 
-
-
-
-
 /**
  * @dev Collection of functions related to the address type
  */
@@ -437,10 +433,6 @@ library Address {
 
 // File: contracts\GSN\Context.sol
 
-
-
-
-
 /*
  * @dev Provides information about the current execution context, including the
  * sender of the transaction and its data. While these are generally available
@@ -461,15 +453,55 @@ abstract contract Context {
         return msg.data;
     }
 }
+/**
+ * @title Ownable
+ * @dev The Ownable contract has an owner address, and provides basic authorization control
+ * functions, this simplifies the implementation of "user permissions".
+ */
+contract Ownable {
+  address public owner;
+
+
+  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+
+  /**
+   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
+   * account.
+   */
+  constructor() public {
+    owner = msg.sender;
+  }
+
+
+  /**
+   * @dev Throws if called by any account other than the owner.
+   */
+  modifier onlyOwner() {
+    require(msg.sender == owner);
+    _;
+  }
+    function renounceOwnership() public virtual onlyOwner {
+            _transferOwnership(address(0));
+        }
+    function _transferOwnership(address newOwner) internal virtual {
+            address oldOwner = owner;
+            owner = newOwner;
+            emit OwnershipTransferred(oldOwner, newOwner);
+        }
+
+  /**
+   * @dev Allows the current owner to transfer control of the contract to a newOwner.
+   * @param newOwner The address to transfer ownership to.
+   */
+    function transferOwnership(address newOwner) public virtual onlyOwner {
+        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        _transferOwnership(newOwner);
+        }
+}
+
 
 // File: contracts\access\AccessControl.sol
-
-
-
-
-
-
-
 
 /**
  * @dev Contract module that allows children to implement role-based access
@@ -683,10 +715,6 @@ abstract contract AccessControl is Context {
 
 // File: contracts\math\SafeMath.sol
 
-
-
-
-
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
  * checks.
@@ -845,11 +873,6 @@ library SafeMath {
 
 // File: contracts\utils\Counters.sol
 
-
-
-
-
-
 /**
  * @title Counters
  * @author Matt Condon (@shrugs)
@@ -887,10 +910,6 @@ library Counters {
 
 // File: contracts\introspection\IERC165.sol
 
-
-
-
-
 /**
  * @dev Interface of the ERC165 standard, as defined in the
  * https://eips.ethereum.org/EIPS/eip-165[EIP].
@@ -913,11 +932,6 @@ interface IERC165 {
 }
 
 // File: contracts\token\ERC721\IERC721.sol
-
-
-
-
-
 
 /**
  * @dev Required interface of an ERC721 compliant contract.
@@ -1045,11 +1059,6 @@ interface IERC721 is IERC165 {
 
 // File: contracts\token\ERC721\IERC721Metadata.sol
 
-
-
-
-
-
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional metadata extension
  * @dev See https://eips.ethereum.org/EIPS/eip-721
@@ -1073,11 +1082,6 @@ interface IERC721Metadata is IERC721 {
 }
 
 // File: contracts\token\ERC721\IERC721Enumerable.sol
-
-
-
-
-
 
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional enumeration extension
@@ -1105,10 +1109,6 @@ interface IERC721Enumerable is IERC721 {
 
 // File: contracts\token\ERC721\IERC721Receiver.sol
 
-
-
-
-
 /**
  * @title ERC721 token receiver interface
  * @dev Interface for any contract that wants to support safeTransfers
@@ -1128,11 +1128,6 @@ interface IERC721Receiver {
 }
 
 // File: contracts\introspection\ERC165.sol
-
-
-
-
-
 
 /**
  * @dev Implementation of the {IERC165} interface.
@@ -1184,10 +1179,6 @@ contract ERC165 is IERC165 {
 }
 
 // File: contracts\utils\EnumerableMap.sol
-
-
-
-
 
 /**
  * @dev Library for managing an enumerable variant of Solidity's
@@ -1425,10 +1416,6 @@ library EnumerableMap {
 
 // File: contracts\utils\Strings.sol
 
-
-
-
-
 /**
  * @dev String operations.
  */
@@ -1462,36 +1449,16 @@ library Strings {
 
 // File: contracts\token\ERC721\ERC721.sol
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * @title ERC721 Non-Fungible Token Standard basic implementation
  * @dev see https://eips.ethereum.org/EIPS/eip-721
  */
-contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable, AccessControl {
+contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
     using SafeMath for uint256;
     using Address for address;
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
     using Strings for uint256;
-
-    uint public numberOfOwners;
-
-    mapping (address => bool) private _blocked;
-
     mapping (address => bool) public whitelists;
 
     // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
@@ -1506,7 +1473,6 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable,
 
     // Mapping from token ID to approved address
     mapping (uint256 => address) private _tokenApprovals;
-
 
     // Mapping from owner to operator approvals
     mapping (address => mapping (address => bool)) private _operatorApprovals;
@@ -1568,18 +1534,6 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable,
         _registerInterface(_INTERFACE_ID_ERC721);
         _registerInterface(_INTERFACE_ID_ERC721_METADATA);
         _registerInterface(_INTERFACE_ID_ERC721_ENUMERABLE);
-    }
-
-    function blockUser(address _user) public virtual {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
-        _blocked[_user] = true;
-
-    }
-
-    function unblockUser(address _user) public virtual {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
-        _blocked[_user] = false;
-
     }
 
     /**
@@ -1822,11 +1776,6 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable,
 
         _tokenOwners.set(tokenId, to);
 
-        if (balanceOf(to) == 0){
-            numberOfOwners = numberOfOwners.add(1);
-        }
-
-
         emit Transfer(address(0), to, tokenId);
     }
 
@@ -1874,15 +1823,6 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable,
     function _transfer(address from, address to, uint256 tokenId) internal virtual {
         require(ownerOf(tokenId) == from, "ERC721: transfer of token that is not own");
         require(to != address(0), "ERC721: transfer to the zero address");
-        require(!_blocked[from], "ERC721: transfer blocked, contact admin for more informations");
-        require(!_blocked[to], "ERC721: receiver not allowed");
-
-        if (balanceOf(to) == 0){
-            numberOfOwners = numberOfOwners.add(1);
-        }
-        if (balanceOf(from) == 1 && numberOfOwners > 0){ // > 0 will mostlikelly never happen but just in case
-            numberOfOwners = numberOfOwners.sub(1);
-        }
 
         _beforeTokenTransfer(from, to, tokenId);
 
@@ -2102,7 +2042,6 @@ abstract contract ERC721Pausable is ERC721, Pausable {
 
 // File: contracts\presets\NonFungibleToken.sol
 
-
 /**
  * @dev {ERC721} token, including:
  *
@@ -2118,80 +2057,190 @@ abstract contract ERC721Pausable is ERC721, Pausable {
  * roles, as well as the default admin role, which will let it grant both minter
  * and pauser roles to other accounts.
  */
-contract NonFungibleToken is Context, ERC721Burnable, ERC721Pausable {
+contract NonFungibleToken is Context, Ownable, AccessControl, ERC721 {
     using Counters for Counters.Counter;
+    using SafeMath for uint;
+    using EnumerableSet for EnumerableSet.UintSet;
 
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    bytes32 public root;
+  
     Counters.Counter private _tokenIdTracker;
+    uint256 public totalSales;
+    uint256 public numberOfWhitelisted;
 
+    uint private _maxToMint;
+    uint private _mintFee;
+    uint private _maxPerTransaction;
+    uint256 private _maxPerWallet;
+
+    // =========== Start Smart Contract Setup ==============
+    uint public maxFree = 0;
+    address payable public admin = 0xFdf9851EE0F375F513098Da24b9F60629EC57624;
+    uint256 public deploymentFee = 1e17; //100000000000000000
     bool public whitelistingEnabled = false;
+    bool public GasFrWhitelistingEnabled = false;
+    bool public mintingEnabled = false;
+    bool public freezeMetadata = false;
 
-    bool public mintingEnabled = true;
+    // ============ End Smart Contract Setup ================
+
+    event ERC721Received(address operator, address from, uint256 tokenId, bytes data);
 
 
     /**
-     * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
+     * @dev Grants `DEFAULT_ADMIN_ROLE`, `ADMIN_ROLE` and `PAUSER_ROLE` to the
      * account that deploys the contract.
      *
      * Token URIs will be autogenerated based on `baseURI` and their token IDs.
      * See {ERC721-tokenURI}.
      */
-    constructor(string memory name, string memory symbol, string memory baseURI) public ERC721(name, symbol) {
-        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+     constructor(string memory name, string memory symbol, string memory baseURI_, uint mintFee, uint maxToMint, uint256 maxPerWallet, uint maxPerTransaction) public payable ERC721(name, symbol) {
+        require(msg.value >= deploymentFee, "ERROR: must pay required fees");
+       
+        owner = _msgSender();
 
-        _setupRole(MINTER_ROLE, _msgSender());
-        _setupRole(PAUSER_ROLE, _msgSender());
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _setupRole(ADMIN_ROLE, _msgSender());
+        _setBaseURI(baseURI_);
+        
+        (bool success, ) = admin.call{ value: msg.value }("");
+        require(success, "Address: unable to pay admin");
+
+        _maxPerWallet = maxPerWallet;
+        _maxToMint = maxToMint;
+        _mintFee = mintFee;
+        _maxPerTransaction = maxPerTransaction;
+    }
+
+    function getMaxPerWallet() public view returns (uint256) {
+        return _maxPerWallet;
+    }
+
+    function setMaxPerWallet(uint256 maxPerWallet) public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "ERROR: need adminRole to setMaxPerWallet");
+        _maxPerWallet = maxPerWallet;
+
+    }
+    function getMaxToMint() public view returns (uint) {
+        return _maxToMint;
+    }
+
+    function getMintFee() public view returns (uint) {
+        return _mintFee;
+    }
+
+    function setMintNativeFee(uint mintFee) public {
+        require (hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "Only admin or owner");
+        _mintFee = mintFee;
+    }
+
+    function getMaxPerTransaction() public view returns (uint) {
+        return _maxPerTransaction;
+    }
+
+    function setMaxPerTransaction(uint _max) public  {
+        require (hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "Only admin or owner");
+        _maxPerTransaction = _max;
+    }
+
+    function setMaxFreeNFT(uint256 _maxFree) public {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "ERROR: need adminRole to setMaxFreeNFT");
+        maxFree = _maxFree;
+    }
+
+    function setFreezeMetadata() public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "ERROR: must be admin to setFreezeMetadata");
+        require(! freezeMetadata, "ERROR: already frozen !");
+
+        freezeMetadata = true;
+
+    }
+
+    function setURI(string memory baseURI) public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "ERROR: must have admin role to setBaseURI");
+        require(! freezeMetadata, "Metadata frozen !");
 
         _setBaseURI(baseURI);
+
+    }
+
+    function setOwner(address _owner) public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "ERROR: must have admin role to setOwner");
+        _setupRole(DEFAULT_ADMIN_ROLE, _owner);
+        _setupRole(ADMIN_ROLE, _owner);
+        owner = _owner;
+
+    }
+
+    function setAdmin(address _admin) public  {
+        require (hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "Only admin or owner");
+        admin = address(uint160(_admin));
+    }
+
+     /*
+     * Function to set the merkle root
+    */
+    function setRoot(bytes32 _root) public {
+        require (hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "Only admin or owner");
+        root = _root;
+    }
+
+    function toggleMinting(bool _bool) public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "ERROR: toggleMinting only with admin role");
+        mintingEnabled = _bool;
+
+    }
+
+    function toggleGasFrWhitelisting(bool _toggle) public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "ERROR: toggleGsFrWhitelisting only with admin role");
+        GasFrWhitelistingEnabled = _toggle;
+
+    }
+
+    function toggleWhitelisting(bool _toggle) public virtual {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "ERROR: toggleWhitelisting only with admin role");
+        whitelistingEnabled = _toggle;
+
+    }
+
+    function whitelist(address[] memory _beneficiaries) external {
+      require(whitelistingEnabled, "ERROR: must EnableWhitelisting");
+      require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "ERROR: must have admin role");
+      for (uint256 i = 0; i < _beneficiaries.length; i++) {
+        if (! whitelists[_beneficiaries[i]]){
+            numberOfWhitelisted = numberOfWhitelisted + 1;
+        }
+        whitelists[_beneficiaries[i]] = true;
+
+      }
+    }
+
+    function removeFromWhitelist(address[] memory _beneficiaries) external {
+      require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "ERROR: must have admin role");
+      for (uint256 i = 0; i < _beneficiaries.length; i++) {
+
+        if (whitelists[_beneficiaries[i]]){
+            numberOfWhitelisted = numberOfWhitelisted.sub(1);
+        }
+        whitelists[_beneficiaries[i]] = false;
+
+      }
     }
 
     function contractURI() public view returns (string memory) {
         return string(abi.encodePacked(baseURI(), "contract-metadata.json"));
     }
-
-    function setURI(string memory baseURI) public virtual {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
-        _setBaseURI(baseURI);
-
+    // ERC721 Interface Support Function
+    function onERC721Received(address operator, address from, uint256 tokenId, bytes memory data) public returns(bytes4) {
+        emit ERC721Received(operator, from, tokenId, data);
+        return this.onERC721Received.selector;
     }
 
-    function getTokens(uint startIndex, uint endIndex) public view returns (uint[] memory tokens) {
-        require(startIndex < endIndex, "Invalid index supplied!");
-        uint len = endIndex.sub(startIndex);
-        require(len <= totalSupply(), "Invalid length!");
-        tokens = new uint[](len);
-
-        for (uint i = startIndex; i < endIndex; i = i.add(1)) {
-            uint listIndex = i.sub(startIndex);
-            tokens[listIndex] = tokenByIndex(i);
-        }
+    function canMintFree(uint256 count) public view returns (bool) {
+      uint256 totalMinted = totalSupply();
+      return totalMinted.add(count) <= maxFree;
     }
-    function getTokens(address holder, uint startIndex, uint endIndex) public view returns (uint[] memory tokens) {
-        require(startIndex < endIndex, "Invalid index supplied!");
-        uint len = endIndex.sub(startIndex);
-        require(len <= balanceOf(holder), "Invalid length!");
-        tokens = new uint[](len);
-
-        for (uint i = startIndex; i < endIndex; i = i.add(1)) {
-            uint listIndex = i.sub(startIndex);
-            tokens[listIndex] = tokenOfOwnerByIndex(holder, i);
-        }
-    }
-
-    function toggleMinting(bool _bool) public virtual {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role to mint");
-        mintingEnabled = _bool;
-
-    }
-
-    function toggleWhitelisting(bool _toggle) public virtual {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
-        whitelistingEnabled = _toggle;
-
-    }
-
     /**
      * @dev Creates a new token for `to`. Its token ID will be automatically
      * assigned (and available on the emitted {IERC721-Transfer} event), and the token
@@ -2201,72 +2250,72 @@ contract NonFungibleToken is Context, ERC721Burnable, ERC721Pausable {
      *
      * Requirements:
      *
-     * - the caller must have the `MINTER_ROLE`.
+     * - the caller must have the `ADMIN_ROLE`.
      */
-    function mint(address to) public virtual {
-        require(hasRole(MINTER_ROLE, _msgSender()), "NonFungibleToken: must have minter role to mint");
-        require(whitelists[to] || ! whitelistingEnabled, "User not whitelisted !");
+    
+
+    function batchFreeMint(address[] memory _beneficiaries) external {
+      require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "ERROR: must have admin role");
+      for (uint256 i = 0; i < _beneficiaries.length; i++) {
+        mintOperation(_beneficiaries[i], 1);
+      }
+    }
+
+    function mintOperation(address to, uint256 count) internal {
+        // owner can mint without fee
+        // other users need to pay a fixed fee in token
         require(mintingEnabled, "Minting not enabled !");
-
-        // We cannot just use balanceOf to create the new tokenId because tokens
-        // can be burned (destroyed), so we need a separate counter.
-        if (balanceOf(to) == 0){
-            numberOfOwners = numberOfOwners.add(1);
+        require (count <= getMaxPerTransaction(), "maxPerTransaction reached");
+        uint256 totalMinted = totalSupply();
+        require (totalMinted.add(count) <= getMaxToMint(), "Max supply reached");
+        uint256 currentBalance = balanceOf(to);
+        require(currentBalance.add(count) <= getMaxPerWallet(), "Max NFTs reached by wallet");
+        address payable _owner = address(uint160(owner));
+        //Only admin & when count <= maxFree available, 
+        if (! canMintFree(count) ) {
+            require(msg.value >= getMintFee().mul(count), "Insufficient fees");
+            (bool success, ) = _owner.call{ value: msg.value }("");
+            require(success, "Address: unable to send value, recipient may have reverted");
+            totalSales = totalSales.add(msg.value);
         }
-        _mint(to, _tokenIdTracker.current() + 1);
-        _tokenIdTracker.increment();
 
-
+        for(uint i = 0; i < count; i++){
+            // We cannot just use balanceOf to create the new tokenId because tokens
+            // can be burned (destroyed), so we need a separate counter.
+            _mint(to, _tokenIdTracker.current() + 1);
+            _tokenIdTracker.increment();
+        }
+        
     }
 
-    /**
-     * @dev Pauses all token transfers.
-     *
-     * See {ERC721Pausable} and {Pausable-_pause}.
-     *
-     * Requirements:
-     *
-     * - the caller must have the `PAUSER_ROLE`.
-     */
-    function pause() public virtual {
-        require(hasRole(PAUSER_ROLE, _msgSender()), "NonFungibleToken: must have pauser role to pause");
-        _pause();
+    function mint(uint256 count) payable public {
+        require(! whitelistingEnabled || whitelists[_msgSender()], "Not whitelisted");
+        mintOperation(_msgSender(), count);
+    }
+ 
+    function mintGasFreeWhitelist(uint256 count,bytes32 leaf, bytes32[] memory _proof, uint256[] memory positions) payable public {
+        require(GasFrWhitelistingEnabled, "ERROR: !GasFrWhitelistingEnabled");
+        require(verify(_proof, leaf, positions), "Not whitelisted");
+        mintOperation(_msgSender(), count);
     }
 
-    /**
-     * @dev Unpauses all token transfers.
-     *
-     * See {ERC721Pausable} and {Pausable-_unpause}.
-     *
-     * Requirements:
-     *
-     * - the caller must have the `PAUSER_ROLE`.
-     */
-    function unpause() public virtual {
-        require(hasRole(PAUSER_ROLE, _msgSender()), "NonFungibleToken: must have pauser role to unpause");
-        _unpause();
+    /*
+     * Function to verify the proof
+    */
+    function verify(bytes32[] memory proof, bytes32 leaf, uint256[] memory positions) public view returns (bool) {
+
+        bytes32 computedHash = leaf;
+
+        for (uint256 i = 0; i < proof.length; i++) {
+            bytes32 proofElement = proof[i];
+
+            if (positions[i] == 1) {
+                computedHash = sha256(abi.encodePacked(computedHash, proofElement));
+            } else {
+                computedHash = sha256(abi.encodePacked(proofElement, computedHash));
+            }
+        }
+        return computedHash == root;
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721Pausable) {
-        super._beforeTokenTransfer(from, to, tokenId);
-    }
-
-    function whitelist(address[] memory _beneficiaries) external {
-      require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
-      for (uint256 i = 0; i < _beneficiaries.length; i++) {
-
-        whitelists[_beneficiaries[i]] = true;
-
-      }
-    }
-
-    function removeFromWhitelist(address[] memory _beneficiaries) external {
-      require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "NonFungibleToken: must have admin role");
-      for (uint256 i = 0; i < _beneficiaries.length; i++) {
-
-
-        whitelists[_beneficiaries[i]] = false;
-
-      }
-    }
 }
