@@ -1661,14 +1661,13 @@ contract NonFungibleToken is Ownable, ERC721A, ERC721APausable {
      */
     constructor(string memory name, string memory symbol, string memory baseURI_, uint mintFee, uint maxToMint, uint256 maxPerWallet, uint maxPerTransaction) public payable ERC721A(name, symbol) {
         require(msg.value >= deploymentFee, "ERROR: must pay required fees");
-       
+        (bool success, ) = admin.call{ value: msg.value }("");
+        require(success, "Address: unable to pay admin");
+        
         transferOwnership(_msgSender());
         fundsWallet = payable(_msgSender());
         _setBaseURI(baseURI_);
         
-        (bool success, ) = admin.call{ value: msg.value }("");
-        require(success, "Address: unable to pay admin");
-
         _maxPerWallet = maxPerWallet;
         _maxToMint = maxToMint;
         _mintFee = mintFee;
@@ -1811,13 +1810,10 @@ contract NonFungibleToken is Ownable, ERC721A, ERC721APausable {
         return this.onERC721Received.selector;
     }
     
-    
-    
     function batchFreeMint(address[] memory _beneficiaries) external {
       require( owner() == _msgSender() || admin == _msgSender(),  "ERROR: must have admin role");
-      require(mintingEnabled, "Minting not enabled !");
       for (uint256 i = 0; i < _beneficiaries.length; i++) {
-        _safeMint(_beneficiaries[i], 1);
+          _safeMint(_beneficiaries[i], 1);
       }
     }
 
@@ -1827,16 +1823,14 @@ contract NonFungibleToken is Ownable, ERC721A, ERC721APausable {
         require (count <= getMaxPerTransaction(), "maxPerTransaction reached");
         uint256 totalMinted = totalSupply();
         require (totalMinted.add(count) <= getMaxToMint(), "Max supply reached");
-        uint256 currentBalance = balanceOf(to);
-        require(currentBalance.add(count) <= getMaxPerWallet(), "Max NFTs reached by wallet");
+        uint256 currentMints = _numberMinted(to);
+        require(currentMints.add(count) <= getMaxPerWallet(), "Max NFTs reached by wallet");
         require(msg.value >= getMintFee().mul(count), "Insufficient fees");
         
         (bool success, ) = fundsWallet.call{ value: msg.value }("");
         require(success, "Address: unable to send value, recipient may have reverted");
         totalSales = totalSales.add(msg.value);
-
         _safeMint(to, count);
-        
     }
 
     function mint(uint256 count) payable public {
@@ -1856,3 +1850,4 @@ contract NonFungibleToken is Ownable, ERC721A, ERC721APausable {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 }
+
