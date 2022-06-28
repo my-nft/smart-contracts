@@ -1138,13 +1138,6 @@ pragma solidity 0.8.4;
 
 
 
-
-contract OwnableDelegateProxy { }
-
-contract ProxyRegistry {
-  mapping(address => OwnableDelegateProxy) public proxies;
-}
-
 /**
  * @title ERC1155Tradable
  * ERC1155Tradable - ERC1155 contract that whitelists an operator address, has create and mint functionality, and supports useful standards from OpenZeppelin,
@@ -1154,7 +1147,6 @@ contract ERC1155Tradable is ERC1155, ERC1155MintBurn, Ownable {
   using Strings for string;
   using SafeMath for uint256;
 
-  address proxyRegistryAddress;
   uint256 private _currentTokenID = 0;
   mapping (uint256 => address) public creators;
   mapping (uint256 => uint256) public tokenSupply;
@@ -1181,12 +1173,10 @@ contract ERC1155Tradable is ERC1155, ERC1155MintBurn, Ownable {
 
   constructor(
     string memory _name,
-    string memory _symbol,
-    address _proxyRegistryAddress
+    string memory _symbol
   ) public {
     name = _name;
     symbol = _symbol;
-    proxyRegistryAddress = _proxyRegistryAddress;
   }
 
   function uri(
@@ -1301,21 +1291,6 @@ contract ERC1155Tradable is ERC1155, ERC1155MintBurn, Ownable {
     }
   }
 
-  /**
-   * Override isApprovedForAll to whitelist user's OpenSea proxy accounts to enable gas-free listings.
-   */
-  function isApprovedForAll(
-    address _owner,
-    address _operator
-  ) public view override returns (bool isOperator) {
-    // Whitelist OpenSea proxy contract for easy trading.
-    ProxyRegistry proxyRegistry = ProxyRegistry(proxyRegistryAddress);
-    if (address(proxyRegistry.proxies(_owner)) == _operator) {
-      return true;
-    }
-
-    return ERC1155.isApprovedForAll(_owner, _operator);
-  }
 
   /**
     * @dev Change the creator address for given token
