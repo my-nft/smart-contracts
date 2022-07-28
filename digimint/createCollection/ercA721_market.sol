@@ -1690,7 +1690,7 @@ contract NonFungibleToken is Ownable, ERC721A, ERC721APausable {
     uint256 public deploymentFee = 1e17; //100000000000000000
     bool public whitelistingEnabled = false;
     bool public gasFrWhitelistingEnabled = false;
-    bool public mintingEnabled = false;
+    bool public mintingEnabled = true;
     bool public freezeMetadata = false;
     uint256 private _revealsCount = 0;
 
