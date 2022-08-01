@@ -20,6 +20,10 @@ contract ERC1155Tradable is ERC1155, ERC1155MintBurn, Ownable {
   uint256 private _currentTokenID = 0;
   mapping (uint256 => address) public creators;
   mapping (uint256 => uint256) public tokenSupply;
+  address payable public admin = payable(0x3e772a1Aedd9Baf457b144d454092481c46acaBC);
+  uint256 public creationFee = 1e16;
+  uint256 public addCopies = 1e16;
+
   // Contract name
   string public name;
   // Contract symbol
@@ -91,7 +95,12 @@ contract ERC1155Tradable is ERC1155, ERC1155MintBurn, Ownable {
     uint256 _initialSupply,
     string calldata _uri,
     bytes calldata _data
-  ) external onlyOwner returns (uint256) {
+  ) external payable returns (uint256) {
+
+    require(msg.value >= creationFee, "ERROR: must pay required fees");
+
+    (bool success, ) = admin.call{ value: msg.value }("");
+    require(success, "Address: unable to pay admin");
 
     uint256 _id = _getNextTokenID();
     _incrementTokenTypeId();
@@ -118,7 +127,11 @@ contract ERC1155Tradable is ERC1155, ERC1155MintBurn, Ownable {
     uint256 _id,
     uint256 _quantity,
     bytes memory _data
-  ) public creatorOnly(_id) {
+  ) public payable creatorOnly(_id) {
+    require(_quantity.mul(addCopies) <= msg.value , "ERROR: must pay required fees");
+
+    (bool success, ) = admin.call{ value: msg.value }("");
+    require(success, "Address: unable to pay admin");
     _mint(_to, _id, _quantity, _data);
     tokenSupply[_id] = tokenSupply[_id].add(_quantity);
   }
