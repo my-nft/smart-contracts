@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.4;
-import "../dependencies/Ownable.sol";
-import '../dependencies/ERC1155.sol';
-import '../dependencies/ERC1155Metadata.sol';
-import '../dependencies/ERC1155MintBurn.sol';
-import "../dependencies/Strings.sol";
+import "./dependencies/Ownable.sol";
+import './dependencies/ERC1155.sol';
+import './dependencies/ERC1155Metadata.sol';
+import './dependencies/ERC1155MintBurn.sol';
+import "./dependencies/Strings.sol";
 
 
 /**
@@ -136,6 +136,9 @@ contract ERC1155Tradable is ERC1155, ERC1155MintBurn, Ownable {
     tokenSupply[_id] = tokenSupply[_id].add(_quantity);
   }
 
+
+  
+
   /**
     * @dev Mint tokens for each id in _ids
     * @param _to          The address to mint tokens to
@@ -202,6 +205,10 @@ contract ERC1155Tradable is ERC1155, ERC1155MintBurn, Ownable {
     */
   function _getNextTokenID() private view returns (uint256) {
     return _currentTokenID.add(1);
+  }
+
+   function tokenID() public view returns (uint256) {
+    return _currentTokenID;
   }
 
   /**
