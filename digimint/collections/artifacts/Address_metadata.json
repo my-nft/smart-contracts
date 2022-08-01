@@ -1,0 +1,46 @@
+{
+	"compiler": {
+		"version": "0.8.4+commit.c7e474f2"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"details": "Collection of functions related to the address type",
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"digimint/createCollection/ercA721_market.sol": "Address"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": true,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"digimint/createCollection/ercA721_market.sol": {
+			"keccak256": "0x70d6f1322753889b65be3182253c0af097aa04fe6e021d9900b303b3023d8130",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://52fd245a5cd351710f38f5bfb5a2ccebb1b88cf65099b6dd347dae20814ec179",
+				"dweb:/ipfs/QmYeWgTGxG5iYESP7DnW8XDqDwBkKoSZFJdyjBdxggfnVN"
+			]
+		}
+	},
+	"version": 1
+}
