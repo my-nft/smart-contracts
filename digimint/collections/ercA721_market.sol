@@ -1154,7 +1154,9 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
 
         string memory base_URI = baseURI();
 
-        return bytes(base_URI).length != 0 ? string(abi.encodePacked(base_URI, tokenId.toString(), ".json")) : '';
+        //return bytes(base_URI).length != 0 ? string(abi.encodePacked(base_URI, tokenId.toString(), ".json")) : '';
+        return string(abi.encodePacked(_baseURI, ipfs[tokenId], "")); 
+        
     }
 
    

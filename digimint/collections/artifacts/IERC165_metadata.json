@@ -58,11 +58,11 @@
 	},
 	"sources": {
 		"digimint/collections/ercA721_market.sol": {
-			"keccak256": "0x0c1d889abf9c057315cae8ca6592a346420a740a00209220f7c21dec6443a4f4",
+			"keccak256": "0xa15038c83823c34d71fad0c524a929652f5f52a88ac45e4851c6193c4b4ab4a0",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://e9de3149a882c8027e6a099456a9966acf001f5765071b0cc953a79b38b5aef2",
-				"dweb:/ipfs/QmTkXHD8jFWM8TgiDKxV7tkVdFodaobc64XngN9eNDbLuy"
+				"bzz-raw://3e46b15944574946c2ab327835b8a832bbc23009ebdf80f22871c4871f37e983",
+				"dweb:/ipfs/QmNa64yZHravTcxaT8tvz8LCQZGjpHHpneMFqKeTCRuEak"
 			]
 		}
 	},
