@@ -23,6 +23,7 @@ contract ERC1155Tradable is ERC1155, ERC1155MintBurn, Ownable {
   address payable public admin = payable(0x3e772a1Aedd9Baf457b144d454092481c46acaBC);
   uint256 public creationFee = 1e16;
   uint256 public addCopies = 1e16;
+  mapping (uint => string) public ipfs;
 
   // Contract name
   string public name;
@@ -57,7 +58,8 @@ contract ERC1155Tradable is ERC1155, ERC1155MintBurn, Ownable {
     uint256 _id
   ) public view returns (string memory) {
     require(_exists(_id), "ERC721Tradable#uri: NONEXISTENT_TOKEN");
-    return metauri(_id);
+    //return metauri(_id);
+    return ipfs[_id];
   }
 
   /**
@@ -112,6 +114,7 @@ contract ERC1155Tradable is ERC1155, ERC1155MintBurn, Ownable {
 
     _mint(_initialOwner, _id, _initialSupply, _data);
     tokenSupply[_id] = _initialSupply;
+    ipfs[_id] = _uri;
     return _id;
   }
 
@@ -207,7 +210,7 @@ contract ERC1155Tradable is ERC1155, ERC1155MintBurn, Ownable {
     return _currentTokenID.add(1);
   }
 
-   function tokenID() public view returns (uint256) {
+  function tokenID() public view returns (uint256) {
     return _currentTokenID;
   }
 

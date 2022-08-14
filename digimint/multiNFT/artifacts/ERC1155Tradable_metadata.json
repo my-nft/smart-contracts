@@ -329,6 +329,25 @@
 			{
 				"inputs": [
 					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "ipfs",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "address",
 						"name": "_owner",
 						"type": "address"
@@ -578,6 +597,19 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "tokenID",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint256",
@@ -811,7 +843,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"erc1155Tradeable.sol": "ERC1155Tradable"
+			"digimint/multiNFT/erc1155Tradeable.sol": "ERC1155Tradable"
 		},
 		"evmVersion": "istanbul",
 		"libraries": {},
@@ -819,88 +851,88 @@
 			"bytecodeHash": "ipfs"
 		},
 		"optimizer": {
-			"enabled": false,
+			"enabled": true,
 			"runs": 200
 		},
 		"remappings": []
 	},
 	"sources": {
-		"dependencies/Address.sol": {
+		"digimint/multiNFT/dependencies/Address.sol": {
 			"keccak256": "0x6baf48b0bd7f61d1b8cc2fb6ed78b9a2a6e50b4f222a507a517402ed4c79289d",
 			"urls": [
 				"bzz-raw://644267611bc10d8fe63a4a077970126034c15722fa7c1478155c8e98e34cf00f",
 				"dweb:/ipfs/QmZxtq3dqntMekMFzLM4vEg8g4hy3rv6Aoffc4Lu4Xe1c6"
 			]
 		},
-		"dependencies/Context.sol": {
+		"digimint/multiNFT/dependencies/Context.sol": {
 			"keccak256": "0xbb3818fdf180752e3e6f5cb1bb80a5bf488b8646fcb5f363d6ec967788167b75",
 			"urls": [
 				"bzz-raw://75541c2ea8ec4cab382392c5f3e3d2aff99a91367aed3a7d3b73cbe4eef89db5",
 				"dweb:/ipfs/QmP5jFBqZAwJvETHTndA3mUnD1hqqbMGFAPnncdok4VNN3"
 			]
 		},
-		"dependencies/ERC1155.sol": {
+		"digimint/multiNFT/dependencies/ERC1155.sol": {
 			"keccak256": "0xb0110544135a3348d5f265c82abb9dec3e05c9e4b41b532c8bee927096f37e30",
 			"urls": [
 				"bzz-raw://c86fdf8837f5a139ae1d5f07cb32452b7215c6d30a9701110dfb0c73889893da",
 				"dweb:/ipfs/QmazoLJCDmdZrHnDeXdZqLpQaovXB8gvtZPtjxLSnUXnia"
 			]
 		},
-		"dependencies/ERC1155Metadata.sol": {
+		"digimint/multiNFT/dependencies/ERC1155Metadata.sol": {
 			"keccak256": "0xd627658f0082a9dac080b96324ba63993d7d983634a96efdddda3d33e759db56",
 			"urls": [
 				"bzz-raw://9841a768a96f8f1ecae24e883421eeef3e167e29ff59dbd5dcc81ec1da6b6009",
 				"dweb:/ipfs/QmShipoCsQTUcGjvtPvQdubKWeayx8DTrsANt3hGb7mrsb"
 			]
 		},
-		"dependencies/ERC1155MintBurn.sol": {
+		"digimint/multiNFT/dependencies/ERC1155MintBurn.sol": {
 			"keccak256": "0xa8b8042d3a39af9e7481a2955867ee3b5c478e2d5a3b726a18d819aa51031f88",
 			"urls": [
 				"bzz-raw://732d61f12cf52c6a86106407973c3ad31fec381b069e00e6a81b60ca3e2a3300",
 				"dweb:/ipfs/QmVzp5WFJKRhcPdzLgGwCqer3vvaoSg9D6p16eQpEbmJ6V"
 			]
 		},
-		"dependencies/IERC1155.sol": {
+		"digimint/multiNFT/dependencies/IERC1155.sol": {
 			"keccak256": "0xe70c95bd1fa2163ce9aeb7aa5b63ff743bee52e10650c933853ca9010749d884",
 			"urls": [
 				"bzz-raw://11501528eaebbafe3f8b82d0f03c4923a181be55f5b522e76625ae0eb8dd0bbe",
 				"dweb:/ipfs/QmXHK1MJiLJxQsWLPp7wXVEXrfJfRC6fxprnX8wTZTuSXZ"
 			]
 		},
-		"dependencies/IERC1155TokenReceiver.sol": {
+		"digimint/multiNFT/dependencies/IERC1155TokenReceiver.sol": {
 			"keccak256": "0x4359ac23a5790dc6dcf70863026c6014497bd4f5115e29e6b97abf700b98b783",
 			"urls": [
 				"bzz-raw://feced65694bd8ffdae2efe034472d667db4814b7e96378226704c1e83848b1e7",
 				"dweb:/ipfs/QmdUJ2ZMPd7n9uNGpD8tyYtRHyFZYZejdHzGEjjpTU1CEe"
 			]
 		},
-		"dependencies/Ownable.sol": {
+		"digimint/multiNFT/dependencies/Ownable.sol": {
 			"keccak256": "0x16e0e470b9eb44c342323c1edcd6eb4cf7566085f2eb25d537347184562306bd",
 			"urls": [
 				"bzz-raw://a08b0d16d8fa44b5be78c8e6bce3d08c00b54b0277c04081b0777df52552185d",
 				"dweb:/ipfs/Qma4djfNRnGWdKce9RpYP6UtS3pJXfYGuzSHfsZsN27SRC"
 			]
 		},
-		"dependencies/SafeMath.sol": {
+		"digimint/multiNFT/dependencies/SafeMath.sol": {
 			"keccak256": "0xe0c18ad0ab73c2d69b28e1dc4184a8a1580c6bc7f0da9813c59ffea19fa29921",
 			"urls": [
 				"bzz-raw://10f99d6e8142d8f7a4d60f3fbaf7fc4f0c525377e565b08aa41ec60857556a9e",
 				"dweb:/ipfs/QmfVneVTsTyncyRpN4cFRYaKs84VwUuSmgCWmvRkFZ9cDY"
 			]
 		},
-		"dependencies/Strings.sol": {
+		"digimint/multiNFT/dependencies/Strings.sol": {
 			"keccak256": "0x129fa1bf2247191a6f2a8da3f00c984a7e62c7612c1149b0b7417974f3b3c362",
 			"urls": [
 				"bzz-raw://8eca51e684a840e7cb179e98ac207c9b9ca76412482d3fc376fdfe7c0131dcb9",
 				"dweb:/ipfs/QmXAapvYPzjsj967bu5gh1sQQb4QhXrgtHzzeMmmkbsRfv"
 			]
 		},
-		"erc1155Tradeable.sol": {
-			"keccak256": "0x519ddf11c018847450a7eae37af5ea479c9c9a8baa844c8c6933dce570d7af9b",
+		"digimint/multiNFT/erc1155Tradeable.sol": {
+			"keccak256": "0xe03a8d68861dd0aeb9c22ec53c880950f4e6c563a77bed98a6fead6e1f2a4121",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://e236c854c56d7f52c108d81a33a0b6b21f82f539abe3f5a1584ddbb7f217819a",
-				"dweb:/ipfs/QmarkCiu5XvYfvw5xUbwWfr9ExmaX8kDj3iK8DgbXEBWRH"
+				"bzz-raw://812c2842d0fe727835f53652c3d0b1fecaf4c141ce37679c5905962de7f1d154",
+				"dweb:/ipfs/QmNV6CJCcBMsDoYZQBtugAg7RDNGg9VJRbcZpu6wT5pm7h"
 			]
 		}
 	},

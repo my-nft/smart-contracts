@@ -1,0 +1,75 @@
+{
+	"compiler": {
+		"version": "0.6.12+commit.27d51765"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "bytes4",
+						"name": "interfaceId",
+						"type": "bytes4"
+					}
+				],
+				"name": "supportsInterface",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"details": "Implementation of the {IERC165} interface. Contracts may inherit from this and call {_registerInterface} to declare their support of an interface.",
+			"kind": "dev",
+			"methods": {
+				"supportsInterface(bytes4)": {
+					"details": "See {IERC165-supportsInterface}. Time complexity O(1), guaranteed to always use less than 30 000 gas."
+				}
+			},
+			"stateVariables": {
+				"_supportedInterfaces": {
+					"details": "Mapping of interface ids to whether or not it's supported."
+				}
+			},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"digimint/singleNFT/erc721.sol": "ERC165"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": true,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"digimint/singleNFT/erc721.sol": {
+			"keccak256": "0x1506a64bacf47829942fe73dafcb1132783eb63996a020911925cc51adbd11bb",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://fc2652f109369cbcc224d26cad3dfed91397e40a68dc32defcb73972d43b604b",
+				"dweb:/ipfs/QmagAhGs9qh5ZAYv8HC4msz1Rwc2vftjwKutugk6aCCYmq"
+			]
+		}
+	},
+	"version": 1
+}

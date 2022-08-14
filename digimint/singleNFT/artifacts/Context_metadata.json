@@ -1,0 +1,45 @@
+{
+	"compiler": {
+		"version": "0.6.12+commit.27d51765"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"digimint/singleNFT/erc721.sol": "Context"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": true,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"digimint/singleNFT/erc721.sol": {
+			"keccak256": "0x1506a64bacf47829942fe73dafcb1132783eb63996a020911925cc51adbd11bb",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://fc2652f109369cbcc224d26cad3dfed91397e40a68dc32defcb73972d43b604b",
+				"dweb:/ipfs/QmagAhGs9qh5ZAYv8HC4msz1Rwc2vftjwKutugk6aCCYmq"
+			]
+		}
+	},
+	"version": 1
+}

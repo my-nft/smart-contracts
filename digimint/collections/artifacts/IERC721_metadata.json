@@ -347,7 +347,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"digimint/createCollection/ercA721_market.sol": "IERC721"
+			"digimint/collections/ercA721_market.sol": "IERC721"
 		},
 		"evmVersion": "istanbul",
 		"libraries": {},
@@ -361,12 +361,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"digimint/createCollection/ercA721_market.sol": {
-			"keccak256": "0x70d6f1322753889b65be3182253c0af097aa04fe6e021d9900b303b3023d8130",
+		"digimint/collections/ercA721_market.sol": {
+			"keccak256": "0x0c1d889abf9c057315cae8ca6592a346420a740a00209220f7c21dec6443a4f4",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://52fd245a5cd351710f38f5bfb5a2ccebb1b88cf65099b6dd347dae20814ec179",
-				"dweb:/ipfs/QmYeWgTGxG5iYESP7DnW8XDqDwBkKoSZFJdyjBdxggfnVN"
+				"bzz-raw://e9de3149a882c8027e6a099456a9966acf001f5765071b0cc953a79b38b5aef2",
+				"dweb:/ipfs/QmTkXHD8jFWM8TgiDKxV7tkVdFodaobc64XngN9eNDbLuy"
 			]
 		}
 	},
