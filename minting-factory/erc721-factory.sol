@@ -1862,11 +1862,31 @@ contract NonFungibleToken is Ownable, ERC721A, ERC721APausable {
 
 contract Factory {
    NonFungibleToken[] public nonFungibleToken;
+   address payable admin;
 
-   function CreateNFT(string memory name, string memory symbol, string memory baseURI_, uint mintFee, uint maxToMint, uint256 maxPerWallet, uint maxPerTransaction) public {
-     NonFungibleToken newNFT = new NonFungibleToken(name, symbol, baseURI_, mintFee, maxToMint, maxPerWallet, maxPerTransaction, msg.sender);
-     nonFungibleToken.push(newNFT);
+   uint256 public index;
+
+   uint256 public deploymentFee = 1e17;
+
+   constructor(){
+       admin = payable(msg.sender);
    }
 
+   function setFees(uint _fee) public {
+       deploymentFee = _fee;
+   }
+
+   function CreateNFT(string memory name, string memory symbol, string memory baseURI_, uint mintFee, uint maxToMint, uint256 maxPerWallet, uint maxPerTransaction) public payable returns(address){
+
+     require(msg.value >= deploymentFee, "ERROR: must pay required fees");
+
+     (bool success, ) = admin.call{ value: msg.value }("");
+     require(success, "Address: unable to pay admin");
+
+     NonFungibleToken newNFT = new NonFungibleToken(name, symbol, baseURI_, mintFee, maxToMint, maxPerWallet, maxPerTransaction, msg.sender);
+     nonFungibleToken.push(newNFT);
+     index += 1;
+     return address(newNFT);
+   }
 
 }
